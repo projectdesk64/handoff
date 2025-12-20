@@ -48,6 +48,27 @@ export function ProjectForm() {
     }
   };
 
+  // Helper to convert UTC ISO string to Local ISO string (YYYY-MM-DDTHH:mm) for datetime-local input
+  const toLocalISOString = (isoString?: string) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    // Convert to local time by subtracting the timezone offset
+    // offset is in minutes (positive if behind UTC, negative if ahead)
+    // india is -330 (UTC+5:30) => date.getTime() - (-330 * 60000) = date.getTime() + 5.5 hours
+    const localTime = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    return localTime.toISOString().slice(0, 16);
+  };
+
+  const handleDateTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    // value is "2023-10-27T10:00" (Local time)
+    // new Date(value).toISOString() expects value to be local and converts to UTC
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value ? new Date(value).toISOString() : undefined,
+    }));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -249,13 +270,8 @@ export function ProjectForm() {
                     <input
                       type="datetime-local"
                       name="completedAt"
-                      value={formData.completedAt ? new Date(formData.completedAt).toISOString().slice(0, 16) : ''}
-                      onChange={(e) => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          completedAt: e.target.value ? new Date(e.target.value).toISOString() : undefined,
-                        }));
-                      }}
+                      value={toLocalISOString(formData.completedAt)}
+                      onChange={handleDateTimeChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
@@ -264,13 +280,8 @@ export function ProjectForm() {
                     <input
                       type="datetime-local"
                       name="deliveredAt"
-                      value={formData.deliveredAt ? new Date(formData.deliveredAt).toISOString().slice(0, 16) : ''}
-                      onChange={(e) => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          deliveredAt: e.target.value ? new Date(e.target.value).toISOString() : undefined,
-                        }));
-                      }}
+                      value={toLocalISOString(formData.deliveredAt)}
+                      onChange={handleDateTimeChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
