@@ -6,6 +6,7 @@ import { getProjectStatus, getDueAmount, canAccessLinks, isOverdue } from '../ut
 import { formatINR } from '../utils/currency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { Layout } from '../components/Layout';
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -30,16 +31,22 @@ export function ProjectDetail() {
 
   // Show loading only if we have no project data and are fetching/initializing
   if ((globalLoading || isInitializing) && !project) {
-    return <div className="p-8">Loading project...</div>;
+    return (
+      <Layout>
+        <div className="text-gray-500">Loading project...</div>
+      </Layout>
+    );
   }
 
   // Show error only if we aren't loading and still have no project
   if (error || (!project && !isInitializing && !globalLoading)) {
     return (
-      <div className="p-8">
-        <div className="text-red-500 mb-4">Error: {error || 'Project not found'}</div>
-        <Button onClick={() => navigate('/')}>Back to Projects</Button>
-      </div>
+      <Layout>
+        <div className="p-8">
+          <div className="text-red-500 mb-4">Error: {error || 'Project not found'}</div>
+          <Button onClick={() => navigate('/')}>Back to Projects</Button>
+        </div>
+      </Layout>
     );
   }
 
@@ -51,7 +58,14 @@ export function ProjectDetail() {
   const overdue = isOverdue(project);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <Layout
+      title={project.name}
+      actions={
+        <Button onClick={() => navigate(`/projects/${project.id}/edit`)}>
+          Edit Project
+        </Button>
+      }
+    >
       <div className="mb-6">
         <Button variant="outline" onClick={() => navigate('/')}>
           ← Back to Projects
@@ -62,12 +76,9 @@ export function ProjectDetail() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>{project.name}</CardTitle>
+              <CardTitle>Project Overview</CardTitle>
               <CardDescription>{project.clientName || 'No client'}</CardDescription>
             </div>
-            <Button onClick={() => navigate(`/projects/${project.id}/edit`)}>
-              Edit
-            </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -200,6 +211,6 @@ export function ProjectDetail() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </Layout>
   );
 }

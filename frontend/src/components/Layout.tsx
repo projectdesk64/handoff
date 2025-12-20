@@ -1,0 +1,48 @@
+import { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+
+interface LayoutProps {
+    children: ReactNode;
+    title?: string;
+    actions?: ReactNode;
+}
+
+export function Layout({ children, title, actions }: LayoutProps) {
+    return (
+        <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+            {/* Static Header */}
+            <header className="bg-white border-b border-gray-200">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Link to="/" className="text-xl font-bold tracking-tight text-gray-900">
+                            HandOff
+                        </Link>
+                    </div>
+                </div>
+            </header>
+
+            {/* Main Content */}
+            <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {(title || actions) && (
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                        {title && (
+                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                                {title}
+                            </h1>
+                        )}
+                        {actions && (
+                            <div className="flex items-center gap-3">
+                                {actions}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Page Content */}
+                <div>
+                    {children}
+                </div>
+            </main>
+        </div>
+    );
+}

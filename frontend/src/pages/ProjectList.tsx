@@ -4,28 +4,37 @@ import { formatINR } from '../utils/currency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { Layout } from '../components/Layout';
 
 export function ProjectList() {
   const { projects, loading, error, deleteProject } = useProjects();
   const navigate = useNavigate();
 
   if (loading) {
-    return <div className="p-8">Loading projects...</div>;
+    return (
+      <Layout>
+        <div className="text-gray-500">Loading projects...</div>
+      </Layout>
+    );
   }
 
   if (error) {
-    return <div className="p-8 text-red-500">Error: {error}</div>;
+    return (
+      <Layout>
+        <div className="text-red-500">Error: {error}</div>
+      </Layout>
+    );
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Projects</h1>
+    <Layout
+      title="Projects"
+      actions={
         <Button onClick={() => navigate('/projects/new')}>
           New Project
         </Button>
-      </div>
-
+      }
+    >
       {projects.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground mb-4">No projects yet.</p>
@@ -100,7 +109,7 @@ export function ProjectList() {
           })}
         </div>
       )}
-    </div>
+    </Layout>
   );
 }
 
