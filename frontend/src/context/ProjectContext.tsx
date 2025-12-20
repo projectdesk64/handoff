@@ -71,14 +71,27 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchProjects]);
 
-  const updateProject = useCallback(async (id: string, project: Partial<Project>) => {
+  const updateProject = useCallback(async (id: string, projectUpdates: Partial<Project>) => {
     setLoading(true);
     setError(null);
     try {
+      // Find existing project to merge updates into (backend requires full object)
+      let fullProject = projects.find(p => p.id === id);
+
+      if (!fullProject) {
+        const res = await fetch(`${API_BASE_URL}/projects/${id}`);
+        if (!res.ok) throw new Error('Project not found for update');
+        fullProject = await res.json();
+      }
+
+      if (!fullProject) throw new Error('Project data unavailable');
+
+      const mergedProject = { ...fullProject, ...projectUpdates };
+
       const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(project),
+        body: JSON.stringify(mergedProject),
       });
       if (!response.ok) throw new Error('Failed to update project');
       await fetchProjects();
@@ -88,7 +101,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [fetchProjects]);
+  }, [projects, fetchProjects]);
 
   const deleteProject = useCallback(async (id: string) => {
     setLoading(true);

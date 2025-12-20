@@ -30,9 +30,11 @@ export function ProjectList() {
     <Layout
       title="Projects"
       actions={
-        <Button onClick={() => navigate('/projects/new')}>
-          New Project
-        </Button>
+        projects.length > 0 ? (
+          <Button onClick={() => navigate('/projects/new')}>
+            New Project
+          </Button>
+        ) : null
       }
     >
       {projects.length === 0 ? (

@@ -11,7 +11,7 @@ import { Layout } from '../components/Layout';
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { projects, fetchProject, loading: globalLoading, error } = useProjects();
+  const { projects, fetchProject, updateProject, loading: globalLoading, error } = useProjects();
 
   // Initialize project from cache if available to prevent flicker
   const [project, setProject] = useState<Project | null>(() =>
@@ -57,6 +57,19 @@ export function ProjectDetail() {
   const linksAvailable = canAccessLinks(project);
   const overdue = isOverdue(project);
 
+  const handleMarkAsCompleted = async () => {
+    if (!project) return;
+    if (window.confirm('Mark this project as completed?')) {
+      try {
+        const now = new Date().toISOString();
+        await updateProject(project.id, { completedAt: now });
+        setProject((prev) => prev ? { ...prev, completedAt: now } : null);
+      } catch (error) {
+        console.error('Failed to mark project as completed:', error);
+      }
+    }
+  };
+
   // Standard separator style since component is not available
   const Separator = () => <div className="h-[1px] w-full bg-border my-8" />;
 
@@ -81,8 +94,8 @@ export function ProjectDetail() {
           <div className="flex items-center gap-3">
             {/* Status Badge */}
             <div className={`px-3 py-1 rounded-full text-sm font-medium border inline-flex items-center ${overdue
-                ? 'bg-red-50 text-red-700 border-red-200'
-                : 'bg-secondary text-secondary-foreground border-transparent'
+              ? 'bg-red-50 text-red-700 border-red-200'
+              : 'bg-secondary text-secondary-foreground border-transparent'
               }`}>
               {status}
             </div>
@@ -91,6 +104,20 @@ export function ProjectDetail() {
               <span className="text-red-600 font-bold text-sm bg-red-50 px-2 py-0.5 rounded border border-red-100">
                 Overdue
               </span>
+            )}
+
+            {/* Mark as Completed Action */}
+            {!project.completedAt && !project.deliveredAt && (
+              <Button
+                size="sm"
+                variant="default" // Primary style
+                className="ml-auto bg-green-600 hover:bg-green-700 text-white border-green-700 shadow-sm"
+                onClick={handleMarkAsCompleted}
+                disabled={globalLoading}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Mark as Completed
+              </Button>
             )}
           </div>
 
