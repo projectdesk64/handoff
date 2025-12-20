@@ -1,6 +1,7 @@
 import { useProjects } from '../context/ProjectContext';
 import { getProjectStatus, isOverdue, getDueAmount } from '../utils/status';
 import { formatINR } from '../utils/currency';
+import { formatDate } from '../utils/date';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -54,7 +55,7 @@ export function ProjectList() {
             return (
               <Card
                 key={project.id}
-                className={`cursor-pointer hover:shadow-md transition-all ${overdue ? 'border-l-4 border-l-red-500' : ''}`}
+                className={`cursor-pointer hover:shadow-md transition-all border-slate-200 ${overdue ? 'border-l-4 border-l-red-500' : ''}`}
                 onClick={() => navigate(`/projects/${project.id}`)}
               >
                 <CardContent className="p-6">
@@ -75,10 +76,10 @@ export function ProjectList() {
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
                         <div className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${overdue
                           ? 'bg-red-50 text-red-700 border-red-200'
-                          : 'bg-secondary text-secondary-foreground border-transparent'
+                          : 'bg-slate-100 text-slate-700 border-slate-200'
                           }`}>
                           {status}
-                          {overdue && <span className="font-bold ml-1">(Overdue)</span>}
+                          {overdue && <span className="font-semibold ml-1">(Overdue)</span>}
                         </div>
                       </div>
                     </div>
@@ -91,7 +92,7 @@ export function ProjectList() {
                           <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-0.5">
                             Due Amount
                           </p>
-                          <p className={`text-lg font-bold ${dueAmount > 0 ? 'text-amber-600' : 'text-green-600'
+                          <p className={`text-lg font-semibold ${dueAmount > 0 ? 'text-amber-600' : 'text-green-600'
                             }`}>
                             {dueAmount === 0 ? 'Settled' : formatINR(dueAmount)}
                           </p>
@@ -103,7 +104,7 @@ export function ProjectList() {
                             Deadline
                           </p>
                           <p className={`text-sm font-medium ${overdue ? 'text-red-600' : ''}`}>
-                            {new Date(project.deadline).toLocaleDateString()}
+                            {formatDate(project.deadline)}
                           </p>
                         </div>
                       </div>

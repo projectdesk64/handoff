@@ -4,6 +4,7 @@ import { useProjects } from '../context/ProjectContext';
 import { Project } from '../models/Project';
 import { getProjectStatus, getDueAmount, canAccessLinks, isOverdue } from '../utils/status';
 import { formatINR } from '../utils/currency';
+import { formatDate } from '../utils/date';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Layout } from '../components/Layout';
@@ -82,7 +83,7 @@ export function ProjectDetail() {
             {/* Status Badge */}
             <div className={`px-3 py-1 rounded-full text-sm font-medium border inline-flex items-center ${overdue
               ? 'bg-red-50 text-red-700 border-red-200'
-              : 'bg-secondary text-secondary-foreground border-transparent'
+              : 'bg-slate-100 text-slate-700 border-slate-200'
               }`}>
               {status}
             </div>
@@ -99,7 +100,7 @@ export function ProjectDetail() {
               <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-1">
                 Amount Due
               </p>
-              <p className={`text-4xl sm:text-5xl font-extrabold tracking-tight ${dueAmount > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+              <p className={`text-4xl sm:text-5xl font-bold tracking-tight ${dueAmount > 0 ? 'text-amber-600' : 'text-green-600'}`}>
                 {dueAmount === 0 ? 'Settled' : formatINR(dueAmount)}
               </p>
             </div>
@@ -109,11 +110,7 @@ export function ProjectDetail() {
                 Deadline
               </p>
               <p className="text-xl font-medium">
-                {new Date(project.deadline).toLocaleDateString('en-IN', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
+                {formatDate(project.deadline)}
               </p>            </div>
           </div>
         </section>
@@ -141,8 +138,8 @@ export function ProjectDetail() {
               </div>
               <div className="my-2 h-px bg-border" />
               <div className="flex justify-between items-center text-base">
-                <span className="font-bold">Due Amount</span>
-                <span className={`font-bold ${dueAmount > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+                <span className="font-semibold">Due Amount</span>
+                <span className={`font-semibold ${dueAmount > 0 ? 'text-amber-600' : 'text-green-600'}`}>
                   {formatINR(dueAmount)}
                 </span>
               </div>
@@ -323,7 +320,7 @@ export function ProjectDetail() {
             <div>
               <span className="block text-gray-400 text-xs mb-0.5">Date Processed</span>
               <span className="font-medium text-gray-700">
-                {project.partnerShareDate ? new Date(project.partnerShareDate).toLocaleDateString('en-IN') : '—'}
+                {formatDate(project.partnerShareDate)}
               </span>
             </div>
           </div>
