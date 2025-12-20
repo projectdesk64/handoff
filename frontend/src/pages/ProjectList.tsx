@@ -52,6 +52,12 @@ export function ProjectList() {
             const overdue = isOverdue(project);
             const dueAmount = getDueAmount(project);
 
+            const lifecycleDate = project.deliveredAt
+              ? `Delivered on ${formatDate(project.deliveredAt)}`
+              : project.completedAt
+                ? `Completed on ${formatDate(project.completedAt)}`
+                : null;
+
             return (
               <Card
                 key={project.id}
@@ -107,6 +113,18 @@ export function ProjectList() {
                             {formatDate(project.deadline)}
                           </p>
                         </div>
+
+                        {/* Lifecycle Date */}
+                        {lifecycleDate && (
+                          <div>
+                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-0.5 invisible">
+                              State
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {lifecycleDate}
+                            </p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Action: Secondary Delete */}
