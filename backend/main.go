@@ -6,9 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gorilla/mux"
 	"project-tracker/db"
 	"project-tracker/handlers"
+
+	"github.com/gorilla/mux"
 )
 
 var dbPath string
@@ -30,9 +31,6 @@ func main() {
 	// Setup routes
 	r := mux.NewRouter()
 
-	// CORS middleware
-	r.Use(corsMiddleware)
-
 	// API routes
 	r.HandleFunc("/projects", handlers.GetProjects).Methods("GET")
 	r.HandleFunc("/projects/{id}", handlers.GetProject).Methods("GET")
@@ -40,8 +38,10 @@ func main() {
 	r.HandleFunc("/projects/{id}", handlers.UpdateProject).Methods("PUT")
 	r.HandleFunc("/projects/{id}", handlers.DeleteProject).Methods("DELETE")
 
-	log.Println("Server starting on :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	handler := corsMiddleware(r)
+
+	log.Println("Starting handoff backend on :8080")
+	log.Fatal(http.ListenAndServe(":8080", handler))
 }
 
 func corsMiddleware(next http.Handler) http.Handler {
@@ -51,11 +51,10 @@ func corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
 		next.ServeHTTP(w, r)
 	})
 }
-

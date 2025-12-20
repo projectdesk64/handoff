@@ -30,7 +30,8 @@ export function ProjectForm() {
         }
       });
     }
-  }, [id, isEditing, fetchProject]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isEditing]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +52,7 @@ export function ProjectForm() {
     setFormData((prev) => ({
       ...prev,
       [name]: name === 'totalAmount' || name === 'advanceReceived' || name === 'totalReceived' || name === 'partnerShareGiven'
-        ? parseFloat(value) || 0
+        ? parseInt(value) || 0
         : value,
     }));
   };
@@ -132,7 +133,7 @@ export function ProjectForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Total Amount *</label>
+              <label className="block text-sm font-medium mb-1">Total Amount (₹) *</label>
               <input
                 type="number"
                 name="totalAmount"
@@ -140,33 +141,66 @@ export function ProjectForm() {
                 onChange={handleChange}
                 required
                 min="0"
-                step="0.01"
+                step="1"
+                placeholder="Amount in ₹"
                 className="w-full px-3 py-2 border rounded-md"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Advance Received</label>
+              <label className="block text-sm font-medium mb-1">Advance Received (₹)</label>
               <input
                 type="number"
                 name="advanceReceived"
                 value={formData.advanceReceived || 0}
                 onChange={handleChange}
                 min="0"
-                step="0.01"
+                step="1"
+                placeholder="Amount in ₹"
                 className="w-full px-3 py-2 border rounded-md"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Total Received</label>
+              <label className="block text-sm font-medium mb-1">Total Received (₹)</label>
               <input
                 type="number"
                 name="totalReceived"
                 value={formData.totalReceived || 0}
                 onChange={handleChange}
                 min="0"
-                step="0.01"
+                step="1"
+                placeholder="Amount in ₹"
+                className="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Partner Share Given (₹)</label>
+              <input
+                type="number"
+                name="partnerShareGiven"
+                value={formData.partnerShareGiven || 0}
+                onChange={handleChange}
+                min="0"
+                step="1"
+                placeholder="Amount in ₹"
+                className="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Partner Share Date</label>
+              <input
+                type="date"
+                name="partnerShareDate"
+                value={formData.partnerShareDate ? new Date(formData.partnerShareDate).toISOString().slice(0, 10) : ''}
+                onChange={(e) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    partnerShareDate: e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                  }));
+                }}
                 className="w-full px-3 py-2 border rounded-md"
               />
             </div>

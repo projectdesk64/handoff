@@ -2,27 +2,39 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProjects } from '../context/ProjectContext';
 import { Project } from '../models/Project';
-import { getProjectStatus, getDueAmount, canAccessLinks } from '../utils/status';
+import { getProjectStatus, getDueAmount, canAccessLinks, isOverdue } from '../utils/status';
+import { formatINR } from '../utils/currency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { fetchProject, loading, error } = useProjects();
-  const [project, setProject] = useState<Project | null>(null);
+  const { projects, fetchProject, loading: globalLoading, error } = useProjects();
+
+  // Initialize project from cache if available to prevent flicker
+  const [project, setProject] = useState<Project | null>(() =>
+    projects.find(p => p.id === id) || null
+  );
+
+  // Local loading state to handle initial mount before fetch starts
+  const [isInitializing, setIsInitializing] = useState(!project);
 
   useEffect(() => {
     if (id) {
-      fetchProject(id).then(setProject);
+      fetchProject(id)
+        .then(setProject)
+        .finally(() => setIsInitializing(false));
     }
   }, [id, fetchProject]);
 
-  if (loading) {
+  // Show loading only if we have no project data and are fetching/initializing
+  if ((globalLoading || isInitializing) && !project) {
     return <div className="p-8">Loading project...</div>;
   }
 
-  if (error || !project) {
+  // Show error only if we aren't loading and still have no project
+  if (error || (!project && !isInitializing && !globalLoading)) {
     return (
       <div className="p-8">
         <div className="text-red-500 mb-4">Error: {error || 'Project not found'}</div>
@@ -31,9 +43,12 @@ export function ProjectDetail() {
     );
   }
 
+  if (!project) return null;
+
   const status = getProjectStatus(project);
   const dueAmount = getDueAmount(project);
   const linksDisabled = !canAccessLinks(project);
+  const overdue = isOverdue(project);
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -58,7 +73,10 @@ export function ProjectDetail() {
         <CardContent className="space-y-6">
           <div>
             <h3 className="font-semibold mb-2">Status</h3>
-            <p>{status}</p>
+            <p className="flex items-center gap-2">
+              {status}
+              {overdue && <span className="text-sm text-red-600 font-medium">(Overdue)</span>}
+            </p>
           </div>
 
           <div>
@@ -85,12 +103,12 @@ export function ProjectDetail() {
           <div>
             <h3 className="font-semibold mb-2">Financial Information</h3>
             <div className="space-y-2 text-sm">
-              <div><span className="font-medium">Total Amount:</span> ${project.totalAmount.toFixed(2)}</div>
-              <div><span className="font-medium">Advance Received:</span> ${project.advanceReceived.toFixed(2)}</div>
-              <div><span className="font-medium">Total Received:</span> ${project.totalReceived.toFixed(2)}</div>
-              <div><span className="font-medium">Due Amount:</span> ${dueAmount.toFixed(2)}</div>
+              <div><span className="font-medium">Total Amount:</span> {formatINR(project.totalAmount)}</div>
+              <div><span className="font-medium">Advance Received:</span> {formatINR(project.advanceReceived)}</div>
+              <div><span className="font-medium">Total Received:</span> {formatINR(project.totalReceived)}</div>
+              <div><span className="font-medium">Due Amount:</span> {formatINR(dueAmount)}</div>
               {project.partnerShareGiven && (
-                <div><span className="font-medium">Partner Share Given:</span> ${project.partnerShareGiven.toFixed(2)}</div>
+                <div><span className="font-medium">Partner Share Given:</span> {formatINR(project.partnerShareGiven)}</div>
               )}
               {project.partnerShareDate && (
                 <div><span className="font-medium">Partner Share Date:</span> {new Date(project.partnerShareDate).toLocaleDateString()}</div>
@@ -185,4 +203,3 @@ export function ProjectDetail() {
     </div>
   );
 }
-

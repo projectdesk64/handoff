@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { Project } from '../models/Project';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -21,22 +21,22 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/projects`);
       if (!response.ok) throw new Error('Failed to fetch projects');
       const data = await response.json();
-      setProjects(data);
+      setProjects(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchProject = async (id: string): Promise<Project | null> => {
+  const fetchProject = useCallback(async (id: string): Promise<Project | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -50,9 +50,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const createProject = async (project: Omit<Project, 'id' | 'createdAt'>) => {
+  const createProject = useCallback(async (project: Omit<Project, 'id' | 'createdAt'>) => {
     setLoading(true);
     setError(null);
     try {
@@ -69,9 +69,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchProjects]);
 
-  const updateProject = async (id: string, project: Partial<Project>) => {
+  const updateProject = useCallback(async (id: string, project: Partial<Project>) => {
     setLoading(true);
     setError(null);
     try {
@@ -88,9 +88,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchProjects]);
 
-  const deleteProject = async (id: string) => {
+  const deleteProject = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -105,25 +105,25 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchProjects]);
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [fetchProjects]);
+
+  const value = useMemo(() => ({
+    projects,
+    loading,
+    error,
+    fetchProjects,
+    fetchProject,
+    createProject,
+    updateProject,
+    deleteProject,
+  }), [projects, loading, error, fetchProjects, fetchProject, createProject, updateProject, deleteProject]);
 
   return (
-    <ProjectContext.Provider
-      value={{
-        projects,
-        loading,
-        error,
-        fetchProjects,
-        fetchProject,
-        createProject,
-        updateProject,
-        deleteProject,
-      }}
-    >
+    <ProjectContext.Provider value={value}>
       {children}
     </ProjectContext.Provider>
   );
