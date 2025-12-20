@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS projects (
+	id TEXT PRIMARY KEY,
+	name TEXT NOT NULL,
+	clientName TEXT,
+	description TEXT,
+	type TEXT CHECK(type IN ('software','hardware','mixed')) NOT NULL,
+	createdAt TEXT NOT NULL,
+	startDate TEXT,
+	deadline TEXT NOT NULL,
+	completedAt TEXT,
+	deliveredAt TEXT,
+	totalAmount REAL NOT NULL,
+	advanceReceived REAL NOT NULL DEFAULT 0,
+	totalReceived REAL NOT NULL DEFAULT 0,
+	partnerShareGiven REAL DEFAULT 0,
+	partnerShareDate TEXT,
+	completionVideoLink TEXT,
+	completionNotes TEXT,
+	repoLink TEXT,
+	liveLink TEXT,
+	deliveryNotes TEXT,
+	techStack TEXT,
+	deliverables TEXT,
+	internalNotes TEXT
+);
+
