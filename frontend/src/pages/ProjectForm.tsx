@@ -60,165 +60,192 @@ export function ProjectForm() {
 
   return (
     <Layout title={isEditing ? 'Edit Project' : 'New Project'}>
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto pb-12">
         <div className="mb-6">
           <Button variant="outline" onClick={() => navigate('/')}>
             ← Back to Projects
           </Button>
         </div>
 
-        <Card>
-          <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* SECTION 1 — PROJECT INFO */}
+          <section className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Project Info</h3>
+
+            <div className="grid gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Name *</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700">Project Name *</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name || ''}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border rounded-md"
+                  placeholder="e.g. E-commerce Platform Redesign"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Client Name</label>
-                <input
-                  type="text"
-                  name="clientName"
-                  value={formData.clientName || ''}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Client Name</label>
+                  <input
+                    type="text"
+                    name="clientName"
+                    value={formData.clientName || ''}
+                    onChange={handleChange}
+                    placeholder="e.g. Acme Corp"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Project Type *</label>
+                  <select
+                    name="type"
+                    value={formData.type || 'software'}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  >
+                    <option value="software">Software</option>
+                    <option value="hardware">Hardware</option>
+                    <option value="mixed">Mixed</option>
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700">Description</label>
                 <textarea
                   name="description"
                   value={formData.description || ''}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Type *</label>
-                <select
-                  name="type"
-                  value={formData.type || 'software'}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border rounded-md"
-                >
-                  <option value="software">Software</option>
-                  <option value="hardware">Hardware</option>
-                  <option value="mixed">Mixed</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Deadline *</label>
-                <input
-                  type="date"
-                  name="deadline"
-                  value={formData.deadline || ''}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Total Amount (₹) *</label>
-                <input
-                  type="number"
-                  name="totalAmount"
-                  value={formData.totalAmount || 0}
-                  onChange={handleChange}
-                  required
-                  min="0"
-                  step="1"
-                  placeholder="Amount in ₹"
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Advance Received (₹)</label>
-                <input
-                  type="number"
-                  name="advanceReceived"
-                  value={formData.advanceReceived || 0}
-                  onChange={handleChange}
-                  min="0"
-                  step="1"
-                  placeholder="Amount in ₹"
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Total Received (₹)</label>
-                <input
-                  type="number"
-                  name="totalReceived"
-                  value={formData.totalReceived || 0}
-                  onChange={handleChange}
-                  min="0"
-                  step="1"
-                  placeholder="Amount in ₹"
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Partner Share Given (₹)</label>
-                <input
-                  type="number"
-                  name="partnerShareGiven"
-                  value={formData.partnerShareGiven || 0}
-                  onChange={handleChange}
-                  min="0"
-                  step="1"
-                  placeholder="Amount in ₹"
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Partner Share Date</label>
-                <input
-                  type="date"
-                  name="partnerShareDate"
-                  value={formData.partnerShareDate ? new Date(formData.partnerShareDate).toISOString().slice(0, 10) : ''}
-                  onChange={(e) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      partnerShareDate: e.target.value ? new Date(e.target.value).toISOString() : undefined,
-                    }));
-                  }}
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
 
               {isEditing && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Start Date</label>
-                    <input
-                      type="date"
-                      name="startDate"
-                      value={formData.startDate || ''}
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Tech Stack (JSON)</label>
+                    <textarea
+                      name="techStack"
+                      value={formData.techStack || ''}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-md"
+                      rows={2}
+                      placeholder='["React", "Node.js"]'
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm bg-gray-50"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium mb-1">Completed At</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Deliverables (JSON)</label>
+                    <textarea
+                      name="deliverables"
+                      value={formData.deliverables || ''}
+                      onChange={handleChange}
+                      rows={2}
+                      placeholder='["Source Code", "Documentation"]'
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm bg-gray-50"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+
+          {/* SECTION 2 — FINANCIALS */}
+          <section className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Financials</h3>
+            <Card className="bg-gray-50/50 border-gray-200">
+              <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Total Amount</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-gray-500">₹</span>
+                    <input
+                      type="number"
+                      name="totalAmount"
+                      value={formData.totalAmount || 0}
+                      onChange={handleChange}
+                      required
+                      min="0"
+                      step="1"
+                      className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Advance Received</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-gray-500">₹</span>
+                    <input
+                      type="number"
+                      name="advanceReceived"
+                      value={formData.advanceReceived || 0}
+                      onChange={handleChange}
+                      min="0"
+                      step="1"
+                      className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Total Received</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-gray-500">₹</span>
+                    <input
+                      type="number"
+                      name="totalReceived"
+                      value={formData.totalReceived || 0}
+                      onChange={handleChange}
+                      min="0"
+                      step="1"
+                      className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <p className="text-xs text-gray-500 px-1">All amounts are in Indian Rupees (₹)</p>
+          </section>
+
+          {/* SECTION 3 — TIMELINE */}
+          <section className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Timeline</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-700">Deadline *</label>
+                <input
+                  type="date"
+                  name="deadline"
+                  value={formData.deadline || ''}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+
+              {isEditing && (
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Start Date</label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={formData.startDate || ''}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+              )}
+
+              {isEditing && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Completed At</label>
                     <input
                       type="datetime-local"
                       name="completedAt"
@@ -229,12 +256,11 @@ export function ProjectForm() {
                           completedAt: e.target.value ? new Date(e.target.value).toISOString() : undefined,
                         }));
                       }}
-                      className="w-full px-3 py-2 border rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium mb-1">Delivered At</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Delivered At</label>
                     <input
                       type="datetime-local"
                       name="deliveredAt"
@@ -245,113 +271,147 @@ export function ProjectForm() {
                           deliveredAt: e.target.value ? new Date(e.target.value).toISOString() : undefined,
                         }));
                       }}
-                      className="w-full px-3 py-2 border rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
+                </>
+              )}
+            </div>
+          </section>
 
+          {/* SECTION 4 — PARTNER SHARE */}
+          <section className="space-y-4 opacity-90">
+            <div className="flex items-center gap-2 border-b pb-2">
+              <h3 className="text-lg font-semibold text-gray-700">Partner Share</h3>
+              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border">Internal</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-600">Share Given (₹)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-gray-400">₹</span>
+                  <input
+                    type="number"
+                    name="partnerShareGiven"
+                    value={formData.partnerShareGiven || 0}
+                    onChange={handleChange}
+                    min="0"
+                    step="1"
+                    className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-600">Date Given</label>
+                <input
+                  type="date"
+                  name="partnerShareDate"
+                  value={formData.partnerShareDate ? new Date(formData.partnerShareDate).toISOString().slice(0, 10) : ''}
+                  onChange={(e) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      partnerShareDate: e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                    }));
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                />
+              </div>
+
+              {isEditing && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1 text-gray-600">Internal Notes</label>
+                  <textarea
+                    name="internalNotes"
+                    value={formData.internalNotes || ''}
+                    onChange={handleChange}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  />
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* SECTION 5 — DELIVERY INFO (OPTIONAL) */}
+          {isEditing && (
+            <section className="space-y-4 border-t pt-6 mt-8">
+              <h3 className="text-lg font-semibold text-gray-900">Delivery Info <span className="text-gray-400 font-normal text-sm ml-2">(Optional)</span></h3>
+
+              <div className="grid gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Completion Video Link</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Completion Video Link</label>
                     <input
                       type="url"
                       name="completionVideoLink"
                       value={formData.completionVideoLink || ''}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-md"
+                      placeholder="https://loom.com/..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium mb-1">Completion Notes</label>
-                    <textarea
-                      name="completionNotes"
-                      value={formData.completionNotes || ''}
-                      onChange={handleChange}
-                      rows={3}
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Repository Link</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Repository Link</label>
                     <input
                       type="url"
                       name="repoLink"
                       value={formData.repoLink || ''}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-md"
+                      placeholder="https://github.com/..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
+                </div>
 
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Live Link</label>
+                  <input
+                    type="url"
+                    name="liveLink"
+                    value={formData.liveLink || ''}
+                    onChange={handleChange}
+                    placeholder="https://..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Live Link</label>
-                    <input
-                      type="url"
-                      name="liveLink"
-                      value={formData.liveLink || ''}
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Completion Notes</label>
+                    <textarea
+                      name="completionNotes"
+                      value={formData.completionNotes || ''}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-md"
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium mb-1">Delivery Notes</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Delivery Notes</label>
                     <textarea
                       name="deliveryNotes"
                       value={formData.deliveryNotes || ''}
                       onChange={handleChange}
                       rows={3}
-                      className="w-full px-3 py-2 border rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                     />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Tech Stack (JSON array)</label>
-                    <textarea
-                      name="techStack"
-                      value={formData.techStack || ''}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full px-3 py-2 border rounded-md"
-                      placeholder='["React", "TypeScript", "Go"]'
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Deliverables (JSON array)</label>
-                    <textarea
-                      name="deliverables"
-                      value={formData.deliverables || ''}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full px-3 py-2 border rounded-md"
-                      placeholder='["Website", "API", "Documentation"]'
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Internal Notes</label>
-                    <textarea
-                      name="internalNotes"
-                      value={formData.internalNotes || ''}
-                      onChange={handleChange}
-                      rows={3}
-                      className="w-full px-3 py-2 border rounded-md"
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={loading}>
-                  {loading ? 'Saving...' : isEditing ? 'Update' : 'Create'}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => navigate('/')}>
-                  Cancel
-                </Button>
+                </div>
               </div>
-            </form>
-          </CardContent>
-        </Card>
+            </section>
+          )}
+
+          <div className="pt-8 flex gap-4">
+            <Button type="submit" disabled={loading} className="px-8">
+              {loading ? 'Saving...' : isEditing ? 'Update Project' : 'Create Project'}
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => navigate('/')}>
+              Cancel
+            </Button>
+          </div>
+        </form>
       </div>
     </Layout>
   );
