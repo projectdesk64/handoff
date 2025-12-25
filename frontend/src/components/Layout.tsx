@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { Footer } from './Footer';
 
 interface LayoutProps {
     children: ReactNode;
@@ -9,7 +10,7 @@ interface LayoutProps {
 
 export function Layout({ children, title, actions }: LayoutProps) {
     return (
-        <div className="min-h-screen bg-background text-gray-900 font-sans">
+        <div className="min-h-screen bg-background text-gray-900 font-sans flex flex-col">
             {/* Static Header */}
             <header className="bg-white border-b border-gray-200">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -22,7 +23,7 @@ export function Layout({ children, title, actions }: LayoutProps) {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
                 {(title || actions) && (
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                         {title && (
@@ -43,6 +44,8 @@ export function Layout({ children, title, actions }: LayoutProps) {
                     {children}
                 </div>
             </main>
+
+            <Footer />
         </div>
     );
 }
