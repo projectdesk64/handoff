@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProjects } from '../context/ProjectContext';
+import { useToast } from '../context/ToastContext';
 import { Project } from '../models/Project';
 import { getProjectStatus, getDueAmount, isOverdue } from '../utils/status';
 import { formatINR } from '../utils/currency';
@@ -8,11 +9,13 @@ import { formatDate } from '../utils/date';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Layout } from '../components/Layout';
+import { validateURL } from '../utils/validation';
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { projects, fetchProject, updateProject, loading: globalLoading, error } = useProjects();
+  const toast = useToast();
 
   // Initialize project from cache if available to prevent flicker
   const [project, setProject] = useState<Project | null>(() =>
@@ -83,10 +86,9 @@ export function ProjectDetail() {
       // Update project and use returned updated project
       const updatedProject = await updateProject(id, updates);
       setProject(updatedProject);
-
+      toast.success('Status updated', 'Project has been marked as delivered');
     } catch (err) {
-      console.error('Failed to update status:', err);
-      // Optional: Show error toast/message
+      // Error is handled by toast in context
     } finally {
       setStatusUpdating(false);
     }
@@ -111,21 +113,21 @@ export function ProjectDetail() {
       setIsAddingPayment(false);
       setPaymentAmount('');
       setPaymentError(null);
+      toast.success('Payment recorded', `Payment of ${formatINR(amountToAdd)} has been recorded`);
 
     } catch (err) {
-      console.error('Failed to update payment:', err);
       setPaymentError('Failed to save payment. Please try again.');
+      // Error toast is handled by context
     }
   };
 
   const handleLinkUpdate = async (field: 'repoLink' | 'liveLink' | 'completionVideoLink') => {
     if (!project || !id) return;
 
-    // Basic validation
-    if (tempLinkValue && !tempLinkValue.startsWith('http')) {
-      // In a real app we'd show an error, for now we just rely on browser type="url" or user common sense
-      // But let's at least not save garbage if it's completely empty when it shouldn't be? 
-      // Actually, allowing empty string to "remove" a link is valid behavior for an edit.
+    // Validation
+    if (tempLinkValue && tempLinkValue.trim() !== '' && !validateURL(tempLinkValue)) {
+      toast.error('Invalid URL', 'Please enter a valid URL starting with http:// or https://');
+      return;
     }
 
     try {
@@ -135,8 +137,14 @@ export function ProjectDetail() {
 
       setEditingLink(null);
       setTempLinkValue('');
+      const fieldNames: Record<typeof field, string> = {
+        repoLink: 'Repository link',
+        liveLink: 'Live link',
+        completionVideoLink: 'Completion video link',
+      };
+      toast.success('Link updated', `${fieldNames[field]} has been ${tempLinkValue ? 'updated' : 'removed'}`);
     } catch (err) {
-      console.error(`Failed to update ${field}:`, err);
+      // Error is handled by toast in context
     }
   };
 

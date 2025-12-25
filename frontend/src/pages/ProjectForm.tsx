@@ -5,11 +5,14 @@ import { Project } from '../models/Project';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Layout } from '../components/Layout';
+import { validateProject, getFieldError, validateURL, validateJSON } from '../utils/validation';
+import { useToast } from '../context/ToastContext';
 
 export function ProjectForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { createProject, updateProject, fetchProject, loading } = useProjects();
+  const toast = useToast();
   const isEditing = !!id;
 
   const [formData, setFormData] = useState<Partial<Project>>({
@@ -22,6 +25,9 @@ export function ProjectForm() {
     advanceReceived: 0,
     totalReceived: 0,
   });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (isEditing && id) {
@@ -36,6 +42,19 @@ export function ProjectForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form
+    const validation = validateProject(formData);
+    if (!validation.isValid) {
+      const errorMap: Record<string, string> = {};
+      validation.errors.forEach((err) => {
+        errorMap[err.field] = err.message;
+      });
+      setErrors(errorMap);
+      toast.error('Validation failed', 'Please fix the errors in the form');
+      return;
+    }
+
     try {
       if (isEditing && id) {
         await updateProject(id, formData);
@@ -44,7 +63,34 @@ export function ProjectForm() {
       }
       navigate('/');
     } catch (error) {
-      console.error('Failed to save project:', error);
+      // Error is handled by toast in context
+    }
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    
+    // Validate individual field
+    if (field === 'repoLink' || field === 'liveLink' || field === 'completionVideoLink') {
+      if (formData[field as keyof Project] && !validateURL(formData[field as keyof Project] as string)) {
+        setErrors((prev) => ({ ...prev, [field]: 'Invalid URL format' }));
+      } else {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
+      }
+    } else if (field === 'techStack' || field === 'deliverables') {
+      if (formData[field as keyof Project] && !validateJSON(formData[field as keyof Project] as string)) {
+        setErrors((prev) => ({ ...prev, [field]: 'Invalid JSON format' }));
+      } else {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
+      }
     }
   };
 
@@ -121,10 +167,16 @@ export function ProjectForm() {
                   name="name"
                   value={formData.name || ''}
                   onChange={handleChange}
+                  onBlur={() => handleBlur('name')}
                   required
                   placeholder="e.g. E-commerce Platform Redesign"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all ${
+                    errors.name ? 'border-red-500' : 'border-slate-300'
+                  }`}
                 />
+                {errors.name && touched.name && (
+                  <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -175,10 +227,16 @@ export function ProjectForm() {
                       name="techStack"
                       value={formData.techStack || ''}
                       onChange={handleChange}
+                      onBlur={() => handleBlur('techStack')}
                       rows={2}
                       placeholder='["React", "Node.js"]'
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm bg-gray-50"
+                      className={`w-full px-3 py-2 border rounded-md font-mono text-sm bg-gray-50 ${
+                        errors.techStack ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.techStack && touched.techStack && (
+                      <p className="text-sm text-red-500 mt-1">{errors.techStack}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1 text-gray-700">Deliverables (JSON)</label>
@@ -186,10 +244,16 @@ export function ProjectForm() {
                       name="deliverables"
                       value={formData.deliverables || ''}
                       onChange={handleChange}
+                      onBlur={() => handleBlur('deliverables')}
                       rows={2}
                       placeholder='["Source Code", "Documentation"]'
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm bg-gray-50"
+                      className={`w-full px-3 py-2 border rounded-md font-mono text-sm bg-gray-50 ${
+                        errors.deliverables ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.deliverables && touched.deliverables && (
+                      <p className="text-sm text-red-500 mt-1">{errors.deliverables}</p>
+                    )}
                   </div>
                 </>
               )}
@@ -408,9 +472,15 @@ export function ProjectForm() {
                       name="completionVideoLink"
                       value={formData.completionVideoLink || ''}
                       onChange={handleChange}
+                      onBlur={() => handleBlur('completionVideoLink')}
                       placeholder="https://loom.com/..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black ${
+                        errors.completionVideoLink ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.completionVideoLink && touched.completionVideoLink && (
+                      <p className="text-sm text-red-500 mt-1">{errors.completionVideoLink}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1 text-gray-700">Repository Link</label>
@@ -419,9 +489,15 @@ export function ProjectForm() {
                       name="repoLink"
                       value={formData.repoLink || ''}
                       onChange={handleChange}
+                      onBlur={() => handleBlur('repoLink')}
                       placeholder="https://github.com/..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black ${
+                        errors.repoLink ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.repoLink && touched.repoLink && (
+                      <p className="text-sm text-red-500 mt-1">{errors.repoLink}</p>
+                    )}
                   </div>
                 </div>
 
@@ -432,9 +508,15 @@ export function ProjectForm() {
                     name="liveLink"
                     value={formData.liveLink || ''}
                     onChange={handleChange}
+                    onBlur={() => handleBlur('liveLink')}
                     placeholder="https://..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black ${
+                      errors.liveLink ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
+                  {errors.liveLink && touched.liveLink && (
+                    <p className="text-sm text-red-500 mt-1">{errors.liveLink}</p>
+                  )}
                 </div>
 
 

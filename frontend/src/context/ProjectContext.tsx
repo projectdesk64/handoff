@@ -14,9 +14,17 @@ interface ProjectContextType {
   deleteProject: (id: string) => Promise<void>;
 }
 
+interface ProjectProviderProps {
+  children: ReactNode;
+  toast?: {
+    success: (title: string, description?: string) => void;
+    error: (title: string, description?: string) => void;
+  };
+}
+
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
-export function ProjectProvider({ children }: { children: ReactNode }) {
+export function ProjectProvider({ children, toast }: ProjectProviderProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,15 +69,21 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(project),
       });
-      if (!response.ok) throw new Error('Failed to create project');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create project');
+      }
       await fetchProjects();
+      toast?.success('Project created', 'Project has been created successfully');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      toast?.error('Failed to create project', errorMessage);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [fetchProjects]);
+  }, [fetchProjects, toast]);
 
   const updateProject = useCallback(async (id: string, projectUpdates: Partial<Project>) => {
     setLoading(true);
@@ -95,14 +109,17 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         prevProjects.map((p) => (p.id === id ? updatedProject : p))
       );
 
+      toast?.success('Project updated', 'Project has been updated successfully');
       return updatedProject;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      toast?.error('Failed to update project', errorMessage);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const deleteProject = useCallback(async (id: string) => {
     setLoading(true);
@@ -113,13 +130,16 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       });
       if (!response.ok) throw new Error('Failed to delete project');
       await fetchProjects();
+      toast?.success('Project deleted', 'Project has been deleted successfully');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      toast?.error('Failed to delete project', errorMessage);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [fetchProjects]);
+  }, [fetchProjects, toast]);
 
   useEffect(() => {
     fetchProjects();

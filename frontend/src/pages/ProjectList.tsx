@@ -1,20 +1,71 @@
+import { useState } from 'react';
 import { useProjects } from '../context/ProjectContext';
 import { getProjectStatus, isOverdue, getDueAmount } from '../utils/status';
 import { formatINR } from '../utils/currency';
 import { formatDate } from '../utils/date';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { AlertDialog } from '../components/ui/alert-dialog';
+import { Skeleton } from '../components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 
 export function ProjectList() {
   const { projects, loading, error, deleteProject } = useProjects();
   const navigate = useNavigate();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  if (loading) {
+  const handleDeleteClick = (e: React.MouseEvent, projectId: string, projectName: string) => {
+    e.stopPropagation();
+    setProjectToDelete({ id: projectId, name: projectName });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (projectToDelete) {
+      try {
+        await deleteProject(projectToDelete.id);
+      } catch (err) {
+        // Error is handled by toast in context
+      }
+      setProjectToDelete(null);
+    }
+  };
+
+  if (loading && projects.length === 0) {
     return (
-      <Layout>
-        <div className="text-gray-500">Loading projects...</div>
+      <Layout title="Projects">
+        <div className="flex flex-col gap-4 max-w-5xl mx-auto">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="border-slate-100">
+              <CardContent className="p-6">
+                <div className="flex flex-col gap-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="min-w-0 flex-1">
+                      <Skeleton className="h-6 w-48 mb-2" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                    <Skeleton className="h-6 w-24 rounded-full" />
+                  </div>
+                  <div className="flex items-end justify-between border-t pt-4">
+                    <div className="flex gap-8 sm:gap-12">
+                      <div>
+                        <Skeleton className="h-3 w-20 mb-1" />
+                        <Skeleton className="h-5 w-24" />
+                      </div>
+                      <div>
+                        <Skeleton className="h-3 w-16 mb-1" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-8 w-16" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </Layout>
     );
   }
@@ -132,12 +183,7 @@ export function ProjectList() {
                         variant="ghost"
                         size="sm"
                         className="text-muted-foreground hover:text-destructive hover:bg-red-50 h-8 px-3"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm('Are you sure you want to delete this project?')) {
-                            deleteProject(project.id);
-                          }
-                        }}
+                        onClick={(e) => handleDeleteClick(e, project.id, project.name)}
                       >
                         Delete
                       </Button>
@@ -149,6 +195,17 @@ export function ProjectList() {
           })}
         </div>
       )}
+
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Project"
+        description={`Are you sure you want to delete "${projectToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={handleConfirmDelete}
+      />
     </Layout>
   );
 }
