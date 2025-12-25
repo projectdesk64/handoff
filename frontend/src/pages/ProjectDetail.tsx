@@ -190,7 +190,7 @@ export function ProjectDetail() {
                   size="sm"
                   className="bg-emerald-600 hover:bg-emerald-700 text-white ml-2"
                   onClick={() => handleStatusUpdate('delivered')}
-                  disabled={statusUpdating || dueAmount > 0 || !project.repoLink || !project.liveLink}
+                  disabled={statusUpdating || dueAmount > 0}
                 >
                   {statusUpdating ? 'Updating...' : 'Mark as Delivered'}
                 </Button>
@@ -305,201 +305,155 @@ export function ProjectDetail() {
 
         <Separator />
 
-        {/* SECTION 3 — PROJECT HANDOVER */}
-        <section className="space-y-8">
-          <div>
-            <h3 className="text-lg font-semibold tracking-tight mb-6 flex items-center gap-2 text-slate-900">
-              Project Handover
-              {status === 'Delivered' && (
-                <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full uppercase tracking-wide font-bold">
-                  Delivered
-                </span>
-              )}
-            </h3>
-
-            {/* 1. Readiness Checklist */}
-            <div className="bg-slate-50 border rounded-xl p-5 mb-8">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Delivery Readiness</h4>
-              <div className="space-y-3">
-                {/* Payment */}
-                <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors ${dueAmount === 0
-                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                    : 'bg-white text-slate-300 border-slate-200'
-                    }`}>
-                    {dueAmount === 0 && '✓'}
-                  </div>
-                  <span className={`text-sm ${dueAmount === 0 ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
-                    Payment Settled
-                  </span>
-                  {dueAmount > 0 && <span className="text-[10px] text-red-500 font-medium bg-red-50 px-1.5 py-0.5 rounded">Required</span>}
-                </div>
-
-                {/* Repo Link */}
-                <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors ${project.repoLink
-                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                    : 'bg-white text-slate-300 border-slate-200'
-                    }`}>
-                    {project.repoLink && '✓'}
-                  </div>
-                  <span className={`text-sm ${project.repoLink ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
-                    Source Code Link
-                  </span>
-                  {!project.repoLink && <span className="text-[10px] text-red-500 font-medium bg-red-50 px-1.5 py-0.5 rounded">Required</span>}
-                </div>
-
-                {/* Live Link */}
-                <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors ${project.liveLink
-                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                    : 'bg-white text-slate-300 border-slate-200'
-                    }`}>
-                    {project.liveLink && '✓'}
-                  </div>
-                  <span className={`text-sm ${project.liveLink ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
-                    Live Site Link
-                  </span>
-                  {!project.liveLink && <span className="text-[10px] text-red-500 font-medium bg-red-50 px-1.5 py-0.5 rounded">Required</span>}
-                </div>
-                {/* Video Link (Optional) */}
-                <div className="flex items-center gap-3 opacity-80">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors ${project.completionVideoLink
-                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                    : 'bg-white text-slate-300 border-slate-200'
-                    }`}>
-                    {project.completionVideoLink && '✓'}
-                  </div>
-                  <span className={`text-sm ${project.completionVideoLink ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
-                    Completion Video
-                  </span>
-                  {!project.completionVideoLink && <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">Recommended</span>}
-                </div>
-              </div>
+        {/* SECTION 3 — PROJECT LINKS */}
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+                Project Links
+              </h3>
+              <p className="text-sm text-slate-500 mt-1">
+                Stored for future reference
+              </p>
             </div>
+            {status === 'Delivered' && (
+              <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full uppercase tracking-wide font-bold">
+                Delivered
+              </span>
+            )}
+          </div>
 
-            {/* 2. Delivery Assets */}
-            <div className="grid grid-cols-1 gap-4 mb-8">
-              {/* Repo */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border rounded-lg gap-4">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm text-slate-900">Source Code Repository</p>
-                    {editingLink !== 'repo' && (
-                      project.repoLink ? (
-                        <a href={project.repoLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate block">
-                          {project.repoLink}
-                        </a>
-                      ) : (
-                        <p className="text-xs text-slate-400 italic">No link added</p>
-                      )
-                    )}
-                  </div>
-                </div>
-
+          <div className="divide-y divide-slate-100 border-t border-b border-slate-100">
+            {/* Repo Link */}
+            <div className="py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-slate-900 mb-1">Source Code Repository</p>
                 {editingLink === 'repo' ? (
-                  <div className="flex gap-2 w-full sm:w-auto">
+                  <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
                     <input
                       type="url"
                       placeholder="https://github.com/..."
-                      className="flex-1 sm:w-64 text-sm border rounded px-3 py-1.5"
+                      className="flex-1 text-sm border-slate-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-200"
                       value={tempLinkValue}
                       onChange={(e) => setTempLinkValue(e.target.value)}
                       autoFocus
                     />
-                    <Button size="sm" onClick={() => handleLinkUpdate('repoLink')}>Save</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleLinkUpdate('repoLink')}>Save</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                    </div>
                   </div>
                 ) : (
-                  <Button variant="outline" size="sm" onClick={() => startEditing('repo', project.repoLink)} className="shrink-0">
-                    {project.repoLink ? 'Edit' : 'Add Link'}
-                  </Button>
+                  project.repoLink ? (
+                    <a href={project.repoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate block">
+                      {project.repoLink}
+                    </a>
+                  ) : (
+                    <span className="text-sm text-slate-400">Not added</span>
+                  )
                 )}
               </div>
+              {editingLink !== 'repo' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => startEditing('repo', project.repoLink)}
+                  className={project.repoLink ? "text-slate-500 hover:text-slate-900" : "text-blue-600 hover:text-blue-700 hover:bg-blue-50"}
+                >
+                  {project.repoLink ? 'Edit' : 'Add Link'}
+                </Button>
+              )}
+            </div>
 
-              {/* Live */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border rounded-lg gap-4">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm text-slate-900">Live Website</p>
-                    {editingLink !== 'live' && (
-                      project.liveLink ? (
-                        <a href={project.liveLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate block">
-                          {project.liveLink}
-                        </a>
-                      ) : (
-                        <p className="text-xs text-slate-400 italic">No link added</p>
-                      )
-                    )}
-                  </div>
-                </div>
-
+            {/* Live Link */}
+            <div className="py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-slate-900 mb-1">Live Website</p>
                 {editingLink === 'live' ? (
-                  <div className="flex gap-2 w-full sm:w-auto">
+                  <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
                     <input
                       type="url"
                       placeholder="https://..."
-                      className="flex-1 sm:w-64 text-sm border rounded px-3 py-1.5"
+                      className="flex-1 text-sm border-slate-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-200"
                       value={tempLinkValue}
                       onChange={(e) => setTempLinkValue(e.target.value)}
                       autoFocus
                     />
-                    <Button size="sm" onClick={() => handleLinkUpdate('liveLink')}>Save</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleLinkUpdate('liveLink')}>Save</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                    </div>
                   </div>
                 ) : (
-                  <Button variant="outline" size="sm" onClick={() => startEditing('live', project.liveLink)} className="shrink-0">
-                    {project.liveLink ? 'Edit' : 'Add Link'}
-                  </Button>
+                  project.liveLink ? (
+                    <a href={project.liveLink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate block">
+                      {project.liveLink}
+                    </a>
+                  ) : (
+                    <span className="text-sm text-slate-400">Not added</span>
+                  )
                 )}
               </div>
+              {editingLink !== 'live' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => startEditing('live', project.liveLink)}
+                  className={project.liveLink ? "text-slate-500 hover:text-slate-900" : "text-blue-600 hover:text-blue-700 hover:bg-blue-50"}
+                >
+                  {project.liveLink ? 'Edit' : 'Add Link'}
+                </Button>
+              )}
+            </div>
 
-              {/* Video */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border rounded-lg gap-4">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm text-slate-900">Completion Video</p>
-                    {editingLink !== 'video' && (
-                      project.completionVideoLink ? (
-                        <a href={project.completionVideoLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate block">
-                          {project.completionVideoLink}
-                        </a>
-                      ) : (
-                        <p className="text-xs text-slate-400 italic">Optional</p>
-                      )
-                    )}
-                  </div>
-                </div>
-
+            {/* Video Link */}
+            <div className="py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-slate-900 mb-1">Completion Video</p>
                 {editingLink === 'video' ? (
-                  <div className="flex gap-2 w-full sm:w-auto">
+                  <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
                     <input
                       type="url"
                       placeholder="https://loom.com/..."
-                      className="flex-1 sm:w-64 text-sm border rounded px-3 py-1.5"
+                      className="flex-1 text-sm border-slate-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-200"
                       value={tempLinkValue}
                       onChange={(e) => setTempLinkValue(e.target.value)}
                       autoFocus
                     />
-                    <Button size="sm" onClick={() => handleLinkUpdate('completionVideoLink')}>Save</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleLinkUpdate('completionVideoLink')}>Save</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                    </div>
                   </div>
                 ) : (
-                  <Button variant="outline" size="sm" onClick={() => startEditing('video', project.completionVideoLink)} className="shrink-0">
-                    {project.completionVideoLink ? 'Edit' : 'Add Video'}
-                  </Button>
+                  project.completionVideoLink ? (
+                    <a href={project.completionVideoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate block">
+                      {project.completionVideoLink}
+                    </a>
+                  ) : (
+                    <span className="text-sm text-slate-400">Not added</span>
+                  )
                 )}
               </div>
+              {editingLink !== 'video' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => startEditing('video', project.completionVideoLink)}
+                  className={project.completionVideoLink ? "text-slate-500 hover:text-slate-900" : "text-blue-600 hover:text-blue-700 hover:bg-blue-50"}
+                >
+                  {project.completionVideoLink ? 'Edit' : 'Add Link'}
+                </Button>
+              )}
             </div>
-
-            {/* 3. Final Action */}
-            {/* 3. Final Action - Moved to header */}
-            {status === 'Delivered' && (
-              <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 p-4 rounded-lg text-sm text-center font-medium">
-                Project delivered on {formatDate(project.deliveredAt || '')}
-              </div>
-            )}
           </div>
+
+          {/* Delivered Footer Message */}
+          {status === 'Delivered' && (
+            <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 p-4 rounded-lg text-sm text-center font-medium">
+              Project delivered on {formatDate(project.deliveredAt || '')}
+            </div>
+          )}
         </section>
 
         <Separator />
