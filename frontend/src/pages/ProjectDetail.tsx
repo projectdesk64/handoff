@@ -30,6 +30,10 @@ export function ProjectDetail() {
   // Status UX State
   const [statusUpdating, setStatusUpdating] = useState(false);
 
+  // Handover UX State
+  const [editingLink, setEditingLink] = useState<'repo' | 'live' | 'video' | null>(null);
+  const [tempLinkValue, setTempLinkValue] = useState('');
+
   useEffect(() => {
     if (id) {
       fetchProject(id)
@@ -121,6 +125,36 @@ export function ProjectDetail() {
     }
   };
 
+  const handleLinkUpdate = async (field: 'repoLink' | 'liveLink' | 'completionVideoLink') => {
+    if (!project || !id) return;
+
+    // Basic validation
+    if (tempLinkValue && !tempLinkValue.startsWith('http')) {
+      // In a real app we'd show an error, for now we just rely on browser type="url" or user common sense
+      // But let's at least not save garbage if it's completely empty when it shouldn't be? 
+      // Actually, allowing empty string to "remove" a link is valid behavior for an edit.
+    }
+
+    try {
+      await updateProject(id, { [field]: tempLinkValue });
+
+      // Refresh
+      const updatedProject = await fetchProject(id);
+      if (updatedProject) setProject(updatedProject);
+
+      setEditingLink(null);
+      setTempLinkValue('');
+    } catch (err) {
+      console.error(`Failed to update ${field}:`, err);
+    }
+  };
+
+  const startEditing = (type: 'repo' | 'live' | 'video', currentValue?: string) => {
+    setEditingLink(type);
+    setTempLinkValue(currentValue || '');
+  };
+
+
   // Standard separator style since component is not available
   const Separator = () => <div className="h-[1px] w-full bg-border my-8" />;
 
@@ -170,16 +204,6 @@ export function ProjectDetail() {
                 </Button>
               )}
 
-              {status === 'Ready to Deliver' && (
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white ml-2"
-                  onClick={() => handleStatusUpdate('delivered')}
-                  disabled={statusUpdating}
-                >
-                  {statusUpdating ? 'Updating...' : 'Mark as Delivered'}
-                </Button>
-              )}
             </div>
 
             {/* Status Guidance */}
@@ -292,96 +316,228 @@ export function ProjectDetail() {
 
         <Separator />
 
-        {/* SECTION 3 — DELIVERY & ACCESS */}
-        <section className="space-y-6">
+        {/* SECTION 3 — PROJECT HANDOVER */}
+        <section className="space-y-8">
           <div>
-            <h3 className="text-lg font-semibold tracking-tight mb-4">Delivery & Access</h3>
+            <h3 className="text-lg font-semibold tracking-tight mb-6 flex items-center gap-2">
+              Project Handover
+              {status === 'Delivered' && (
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full uppercase tracking-wide font-bold">
+                  Delivered
+                </span>
+              )}
+            </h3>
 
-            {project.completionVideoLink && (
-              <div className="mb-6 bg-blue-50/50 p-4 rounded-lg border border-blue-100 hover:bg-blue-50 transition-colors">
-                <p className="text-sm font-medium text-blue-900 mb-1">Completion Video Available</p>
-                <a
-                  href={project.completionVideoLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 hover:underline font-semibold flex items-center gap-2"
+            {/* 1. Readiness Checklist */}
+            <div className="bg-slate-50 border rounded-xl p-5 mb-8">
+              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Delivery Readiness</h4>
+              <div className="space-y-3">
+                {/* Payment */}
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${dueAmount === 0
+                    ? 'bg-green-100 text-green-700 border-green-200'
+                    : 'bg-white text-slate-300 border-slate-200'
+                    }`}>
+                    {dueAmount === 0 && '✓'}
+                  </div>
+                  <span className={`text-sm ${dueAmount === 0 ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
+                    Payment Settled
+                  </span>
+                  {dueAmount > 0 && <span className="text-[10px] text-red-500 font-medium bg-red-50 px-1.5 py-0.5 rounded">Required</span>}
+                </div>
+
+                {/* Repo Link */}
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${project.repoLink
+                    ? 'bg-green-100 text-green-700 border-green-200'
+                    : 'bg-white text-slate-300 border-slate-200'
+                    }`}>
+                    {project.repoLink && '✓'}
+                  </div>
+                  <span className={`text-sm ${project.repoLink ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
+                    Source Code Link
+                  </span>
+                  {!project.repoLink && <span className="text-[10px] text-red-500 font-medium bg-red-50 px-1.5 py-0.5 rounded">Required</span>}
+                </div>
+
+                {/* Live Link */}
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${project.liveLink
+                    ? 'bg-green-100 text-green-700 border-green-200'
+                    : 'bg-white text-slate-300 border-slate-200'
+                    }`}>
+                    {project.liveLink && '✓'}
+                  </div>
+                  <span className={`text-sm ${project.liveLink ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
+                    Live Site Link
+                  </span>
+                  {!project.liveLink && <span className="text-[10px] text-red-500 font-medium bg-red-50 px-1.5 py-0.5 rounded">Required</span>}
+                </div>
+                {/* Video Link (Optional) */}
+                <div className="flex items-center gap-3 opacity-80">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${project.completionVideoLink
+                    ? 'bg-green-100 text-green-700 border-green-200'
+                    : 'bg-white text-slate-300 border-slate-200'
+                    }`}>
+                    {project.completionVideoLink && '✓'}
+                  </div>
+                  <span className={`text-sm ${project.completionVideoLink ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
+                    Completion Video
+                  </span>
+                  {!project.completionVideoLink && <span className="text-[10px] text-slate-400 font-medium bg-slate-100 px-1.5 py-0.5 rounded">Recommended</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Delivery Assets */}
+            <div className="grid grid-cols-1 gap-4 mb-8">
+              {/* Repo */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border rounded-lg gap-4">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="bg-slate-100 p-2 rounded-md text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0 3 1.5-2.64-.5-5.36.5-8 0C6 2 5 2 4 2c-3.5 1-4 3.5-4 4A6 6 0 0 0 0 9c0 4 3 4 5 5v4"></path></svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-slate-900">Source Code Repository</p>
+                    {editingLink !== 'repo' && (
+                      project.repoLink ? (
+                        <a href={project.repoLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate block">
+                          {project.repoLink}
+                        </a>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">No link added</p>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                {editingLink === 'repo' ? (
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <input
+                      type="url"
+                      placeholder="https://github.com/..."
+                      className="flex-1 sm:w-64 text-sm border rounded px-3 py-1.5"
+                      value={tempLinkValue}
+                      onChange={(e) => setTempLinkValue(e.target.value)}
+                      autoFocus
+                    />
+                    <Button size="sm" onClick={() => handleLinkUpdate('repoLink')}>Save</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                  </div>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => startEditing('repo', project.repoLink)} className="shrink-0">
+                    {project.repoLink ? 'Edit' : 'Add Link'}
+                  </Button>
+                )}
+              </div>
+
+              {/* Live */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border rounded-lg gap-4">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="bg-slate-100 p-2 rounded-md text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-slate-900">Live Website</p>
+                    {editingLink !== 'live' && (
+                      project.liveLink ? (
+                        <a href={project.liveLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate block">
+                          {project.liveLink}
+                        </a>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">No link added</p>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                {editingLink === 'live' ? (
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      className="flex-1 sm:w-64 text-sm border rounded px-3 py-1.5"
+                      value={tempLinkValue}
+                      onChange={(e) => setTempLinkValue(e.target.value)}
+                      autoFocus
+                    />
+                    <Button size="sm" onClick={() => handleLinkUpdate('liveLink')}>Save</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                  </div>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => startEditing('live', project.liveLink)} className="shrink-0">
+                    {project.liveLink ? 'Edit' : 'Add Link'}
+                  </Button>
+                )}
+              </div>
+
+              {/* Video */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border rounded-lg gap-4">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="bg-slate-100 p-2 rounded-md text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-slate-900">Completion Video</p>
+                    {editingLink !== 'video' && (
+                      project.completionVideoLink ? (
+                        <a href={project.completionVideoLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate block">
+                          {project.completionVideoLink}
+                        </a>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">Optional</p>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                {editingLink === 'video' ? (
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <input
+                      type="url"
+                      placeholder="https://loom.com/..."
+                      className="flex-1 sm:w-64 text-sm border rounded px-3 py-1.5"
+                      value={tempLinkValue}
+                      onChange={(e) => setTempLinkValue(e.target.value)}
+                      autoFocus
+                    />
+                    <Button size="sm" onClick={() => handleLinkUpdate('completionVideoLink')}>Save</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                  </div>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => startEditing('video', project.completionVideoLink)} className="shrink-0">
+                    {project.completionVideoLink ? 'Edit' : 'Add Video'}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* 3. Final Action */}
+            <div className="bg-slate-900 text-slate-100 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+              <div>
+                <h4 className="font-semibold text-lg text-white mb-1">Mark Project as Delivered</h4>
+                <p className="text-slate-400 text-sm">
+                  {status === 'Delivered'
+                    ? `Project was delivered on ${formatDate(project.deliveredAt || '')}`
+                    : "Confirm smooth handover to the client. This is the final step."}
+                </p>
+              </div>
+
+              {status === 'Delivered' ? (
+                <div className="bg-green-500/10 text-green-400 border border-green-500/20 px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Delivered
+                </div>
+              ) : (
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white font-semibold"
+                  onClick={() => handleStatusUpdate('delivered')}
+                  disabled={statusUpdating || dueAmount > 0 || !project.repoLink || !project.liveLink}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                  Watch Project Demo
-                </a>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Repository Link */}
-              <div className={`p-5 rounded-xl border transition-all ${!linksAvailable ? 'bg-muted/50 border-dashed' : 'bg-card hover:shadow-sm'}`}>
-                <div className="flex items-start justify-between mb-3">
-                  <p className="font-semibold">Source Code</p>
-                  {!linksAvailable && (
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
-                      Locked
-                    </span>
-                  )}
-                </div>
-
-                {project.repoLink ? (
-                  !linksAvailable ? (
-                    <div className="space-y-2">
-                      <div className="h-2 w-24 bg-muted-foreground/10 rounded animate-pulse" />
-                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        Available after settlement
-                      </p>
-                    </div>
-                  ) : (
-                    <a
-                      href={project.repoLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:text-primary/80 hover:underline truncate block text-sm font-medium"
-                    >
-                      Open Repository →
-                    </a>
-                  )
-                ) : (
-                  <span className="text-muted-foreground text-sm italic">No link provided</span>
-                )}
-              </div>
-
-              {/* Live Link */}
-              <div className={`p-5 rounded-xl border transition-all ${!linksAvailable ? 'bg-muted/50 border-dashed' : 'bg-card hover:shadow-sm'}`}>
-                <div className="flex items-start justify-between mb-3">
-                  <p className="font-semibold">Live Site</p>
-                  {!linksAvailable && (
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
-                      Locked
-                    </span>
-                  )}
-                </div>
-
-                {project.liveLink ? (
-                  !linksAvailable ? (
-                    <div className="space-y-2">
-                      <div className="h-2 w-32 bg-muted-foreground/10 rounded animate-pulse" />
-                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        Available after settlement
-                      </p>
-                    </div>
-                  ) : (
-                    <a
-                      href={project.liveLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:text-primary/80 hover:underline truncate block text-sm font-medium"
-                    >
-                      Visit Website →
-                    </a>
-                  )
-                ) : (
-                  <span className="text-muted-foreground text-sm italic">No link provided</span>
-                )}
-              </div>
+                  {statusUpdating ? 'Updating...' : 'Confirm Delivery'}
+                </Button>
+              )}
             </div>
           </div>
         </section>
