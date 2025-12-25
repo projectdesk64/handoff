@@ -8,9 +8,10 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/gorilla/mux"
 	"project-tracker/db"
 	"project-tracker/models"
+
+	"github.com/gorilla/mux"
 )
 
 // validateISODate validates that a date string is in ISO 8601 format (YYYY-MM-DD or RFC3339)
@@ -30,7 +31,8 @@ func GetProjects(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.DB.Query(`
 		SELECT id, name, clientName, description, type, createdAt, startDate, deadline,
 		       completedAt, deliveredAt, totalAmount, advanceReceived, totalReceived,
-		       partnerShareGiven, partnerShareDate, completionVideoLink, completionNotes,
+		       partnerShareGiven, partnerShareDate, harshk_share_given, harshk_share_date,
+		       nikku_share_given, nikku_share_date, completionVideoLink, completionNotes,
 		       repoLink, liveLink, deliveryNotes, techStack, deliverables, internalNotes
 		FROM projects
 		ORDER BY createdAt DESC
@@ -62,7 +64,8 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 	err := p.Scan(db.DB.QueryRow(`
 		SELECT id, name, clientName, description, type, createdAt, startDate, deadline,
 		       completedAt, deliveredAt, totalAmount, advanceReceived, totalReceived,
-		       partnerShareGiven, partnerShareDate, completionVideoLink, completionNotes,
+		       partnerShareGiven, partnerShareDate, harshk_share_given, harshk_share_date,
+		       nikku_share_given, nikku_share_date, completionVideoLink, completionNotes,
 		       repoLink, liveLink, deliveryNotes, techStack, deliverables, internalNotes
 		FROM projects
 		WHERE id = ?
@@ -120,6 +123,14 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "PartnerShareDate must be in ISO format (YYYY-MM-DD or RFC3339)")
 		return
 	}
+	if p.HarshkShareDate != nil && !validateISODate(*p.HarshkShareDate) {
+		respondError(w, http.StatusBadRequest, "HarshkShareDate must be in ISO format (YYYY-MM-DD or RFC3339)")
+		return
+	}
+	if p.NikkuShareDate != nil && !validateISODate(*p.NikkuShareDate) {
+		respondError(w, http.StatusBadRequest, "NikkuShareDate must be in ISO format (YYYY-MM-DD or RFC3339)")
+		return
+	}
 
 	// Set createdAt if not provided
 	if p.CreatedAt == "" {
@@ -135,13 +146,15 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 		INSERT INTO projects (
 			id, name, clientName, description, type, createdAt, startDate, deadline,
 			completedAt, deliveredAt, totalAmount, advanceReceived, totalReceived,
-			partnerShareGiven, partnerShareDate, completionVideoLink, completionNotes,
+			partnerShareGiven, partnerShareDate, harshk_share_given, harshk_share_date,
+			nikku_share_given, nikku_share_date, completionVideoLink, completionNotes,
 			repoLink, liveLink, deliveryNotes, techStack, deliverables, internalNotes
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`,
 		p.ID, p.Name, p.ClientName, p.Description, p.Type, p.CreatedAt, p.StartDate,
 		p.Deadline, p.CompletedAt, p.DeliveredAt, p.TotalAmount, p.AdvanceReceived,
-		p.TotalReceived, p.PartnerShareGiven, p.PartnerShareDate, p.CompletionVideoLink,
+		p.TotalReceived, p.PartnerShareGiven, p.PartnerShareDate, p.HarshkShareGiven,
+		p.HarshkShareDate, p.NikkuShareGiven, p.NikkuShareDate, p.CompletionVideoLink,
 		p.CompletionNotes, p.RepoLink, p.LiveLink, p.DeliveryNotes, p.TechStack,
 		p.Deliverables, p.InternalNotes,
 	)
@@ -205,14 +218,16 @@ func UpdateProject(w http.ResponseWriter, r *http.Request) {
 			name = ?, clientName = ?, description = ?, type = ?, startDate = ?,
 			deadline = ?, completedAt = ?, deliveredAt = ?, totalAmount = ?,
 			advanceReceived = ?, totalReceived = ?, partnerShareGiven = ?,
-			partnerShareDate = ?, completionVideoLink = ?, completionNotes = ?,
-			repoLink = ?, liveLink = ?, deliveryNotes = ?, techStack = ?,
-			deliverables = ?, internalNotes = ?
+			partnerShareDate = ?, harshk_share_given = ?, harshk_share_date = ?,
+			nikku_share_given = ?, nikku_share_date = ?, completionVideoLink = ?,
+			completionNotes = ?, repoLink = ?, liveLink = ?, deliveryNotes = ?,
+			techStack = ?, deliverables = ?, internalNotes = ?
 		WHERE id = ?
 	`,
 		p.Name, p.ClientName, p.Description, p.Type, p.StartDate, p.Deadline,
 		p.CompletedAt, p.DeliveredAt, p.TotalAmount, p.AdvanceReceived, p.TotalReceived,
-		p.PartnerShareGiven, p.PartnerShareDate, p.CompletionVideoLink, p.CompletionNotes,
+		p.PartnerShareGiven, p.PartnerShareDate, p.HarshkShareGiven, p.HarshkShareDate,
+		p.NikkuShareGiven, p.NikkuShareDate, p.CompletionVideoLink, p.CompletionNotes,
 		p.RepoLink, p.LiveLink, p.DeliveryNotes, p.TechStack, p.Deliverables,
 		p.InternalNotes, p.ID,
 	)
@@ -272,4 +287,3 @@ func randomString(length int) string {
 	}
 	return string(b)
 }
-

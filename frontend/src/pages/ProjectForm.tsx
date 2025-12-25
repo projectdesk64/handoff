@@ -73,7 +73,8 @@ export function ProjectForm() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'totalAmount' || name === 'advanceReceived' || name === 'totalReceived' || name === 'partnerShareGiven'
+      [name]: name === 'totalAmount' || name === 'advanceReceived' || name === 'totalReceived' ||
+        name === 'partnerShareGiven' || name === 'harshkShareGiven' || name === 'nikkuShareGiven'
         ? parseInt(value) || 0
         : value,
     }));
@@ -293,56 +294,96 @@ export function ProjectForm() {
           {/* SECTION 4 — PARTNER SHARE */}
           <section className="space-y-4 opacity-90">
             <div className="flex items-center gap-2 border-b pb-2">
-              <h3 className="text-lg font-semibold text-gray-700">Partner Share</h3>
+              <h3 className="text-lg font-semibold text-gray-700">Partner Share (Internal)</h3>
               <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border">Internal</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">Share Given (₹)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2 text-gray-400">₹</span>
-                  <input
-                    type="number"
-                    name="partnerShareGiven"
-                    value={formData.partnerShareGiven || 0}
-                    onChange={handleChange}
-                    min="0"
-                    step="1"
-                    className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-                  />
+            {/* HARSHK ROW */}
+            <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+              <h4 className="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Harshk</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-600">Share Given (₹)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-gray-400">₹</span>
+                    <input
+                      type="number"
+                      name="harshkShareGiven"
+                      value={formData.harshkShareGiven || 0}
+                      onChange={handleChange}
+                      min="0"
+                      step="1"
+                      className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1 text-gray-600">Date Given</label>
-                <input
-                  type="date"
-                  name="partnerShareDate"
-                  value={formData.partnerShareDate ? new Date(formData.partnerShareDate).toISOString().slice(0, 10) : ''}
-                  onChange={(e) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      partnerShareDate: e.target.value ? new Date(e.target.value).toISOString() : undefined,
-                    }));
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-                />
-              </div>
-
-              {isEditing && (
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1 text-gray-600">Internal Notes</label>
-                  <textarea
-                    name="internalNotes"
-                    value={formData.internalNotes || ''}
-                    onChange={handleChange}
-                    rows={2}
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-600">Date Given</label>
+                  <input
+                    type="date"
+                    name="harshkShareDate"
+                    value={formData.harshkShareDate ? new Date(formData.harshkShareDate).toISOString().slice(0, 10) : ''}
+                    onChange={(e) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        harshkShareDate: e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                      }));
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
                   />
                 </div>
-              )}
+              </div>
             </div>
+
+            {/* NIKKU ROW */}
+            <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+              <h4 className="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Nikku</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-600">Share Given (₹)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-gray-400">₹</span>
+                    <input
+                      type="number"
+                      name="nikkuShareGiven"
+                      value={formData.nikkuShareGiven || 0}
+                      onChange={handleChange}
+                      min="0"
+                      step="1"
+                      className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-600">Date Given</label>
+                  <input
+                    type="date"
+                    name="nikkuShareDate"
+                    value={formData.nikkuShareDate ? new Date(formData.nikkuShareDate).toISOString().slice(0, 10) : ''}
+                    onChange={(e) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        nikkuShareDate: e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                      }));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {isEditing && (
+              <div className="pt-2">
+                <label className="block text-sm font-medium mb-1 text-gray-600">Internal Notes</label>
+                <textarea
+                  name="internalNotes"
+                  value={formData.internalNotes || ''}
+                  onChange={handleChange}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                />
+              </div>
+            )}
           </section>
 
           {/* SECTION 5 — DELIVERY INFO (OPTIONAL) */}

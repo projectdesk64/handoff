@@ -14,6 +14,11 @@ export interface Project {
   totalReceived: number;
   partnerShareGiven?: number;
   partnerShareDate?: string;
+  // New Explicit Partner Shares
+  harshkShareGiven?: number;
+  harshkShareDate?: string;
+  nikkuShareGiven?: number;
+  nikkuShareDate?: string;
   completionVideoLink?: string;
   completionNotes?: string;
   repoLink?: string;

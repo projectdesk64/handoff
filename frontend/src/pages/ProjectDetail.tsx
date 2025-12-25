@@ -310,21 +310,48 @@ export function ProjectDetail() {
             </h3>
             <span className="text-[10px] text-gray-400 font-medium px-2 py-0.5 bg-gray-100 rounded">INTERNAL</span>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-12 text-sm">
-            <div>
-              <span className="block text-gray-400 text-xs mb-0.5">Share Given</span>
-              <span className="font-semibold text-gray-700">
-                {project.partnerShareGiven ? formatINR(project.partnerShareGiven) : '—'}
-              </span>
+
+          <div className="space-y-4">
+            {/* HARSHK */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm border-b border-gray-100 pb-2">
+              <span className="font-semibold text-gray-800 w-24">Harshk</span>
+              <div className="flex gap-4 sm:gap-12 flex-1">
+                <div>
+                  <span className="block text-gray-400 text-xs mb-0.5">Share Given</span>
+                  <span className="font-semibold text-gray-700">
+                    {project.harshkShareGiven ? formatINR(project.harshkShareGiven) : '—'}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-gray-400 text-xs mb-0.5">Date Processed</span>
+                  <span className="font-medium text-gray-700">
+                    {project.harshkShareDate ? formatDate(project.harshkShareDate) : '—'}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div>
-              <span className="block text-gray-400 text-xs mb-0.5">Date Processed</span>
-              <span className="font-medium text-gray-700">
-                {formatDate(project.partnerShareDate)}
-              </span>
+
+            {/* NIKKU */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm">
+              <span className="font-semibold text-gray-800 w-24">Nikku</span>
+              <div className="flex gap-4 sm:gap-12 flex-1">
+                <div>
+                  <span className="block text-gray-400 text-xs mb-0.5">Share Given</span>
+                  <span className="font-semibold text-gray-700">
+                    {project.nikkuShareGiven ? formatINR(project.nikkuShareGiven) : '—'}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-gray-400 text-xs mb-0.5">Date Processed</span>
+                  <span className="font-medium text-gray-700">
+                    {project.nikkuShareDate ? formatDate(project.nikkuShareDate) : '—'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-          <p className="text-[11px] text-gray-400 mt-3">
+
+          <p className="text-[11px] text-gray-400 mt-4">
             * This share is independent of client payments and is recorded here for administrative purposes only.
           </p>
         </section>
