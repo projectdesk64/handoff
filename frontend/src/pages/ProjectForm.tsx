@@ -71,13 +71,34 @@ export function ProjectForm() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'totalAmount' || name === 'advanceReceived' || name === 'totalReceived' ||
-        name === 'partnerShareGiven' || name === 'harshkShareGiven' || name === 'nikkuShareGiven'
-        ? parseFloat(value) || 0
-        : value,
-    }));
+
+    setFormData((prev) => {
+      let newValue: string | number = value;
+      const numericFields = [
+        'totalAmount', 'advanceReceived', 'totalReceived',
+        'partnerShareGiven', 'harshkShareGiven', 'nikkuShareGiven'
+      ];
+
+      if (numericFields.includes(name)) {
+        newValue = parseFloat(value) || 0;
+      }
+
+      const updates = {
+        ...prev,
+        [name]: newValue,
+      };
+
+      // UX Improvement: Auto-sync Total Received when Advance changes
+      // This prevents the "Double Entry" problem where user sets Advance but forgets Total Received
+      if (name === 'advanceReceived') {
+        const newAdvance = newValue as number;
+        const oldAdvance = prev.advanceReceived || 0;
+        const difference = newAdvance - oldAdvance;
+        updates.totalReceived = (prev.totalReceived || 0) + difference;
+      }
+
+      return updates;
+    });
   };
 
   return (

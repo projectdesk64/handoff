@@ -203,6 +203,17 @@ export function ProjectDetail() {
                 </Button>
               )}
 
+              {status === 'Ready to Deliver' && (
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white ml-2"
+                  onClick={() => handleStatusUpdate('delivered')}
+                  disabled={statusUpdating || dueAmount > 0 || !project.repoLink || !project.liveLink}
+                >
+                  {statusUpdating ? 'Updating...' : 'Mark as Delivered'}
+                </Button>
+              )}
+
             </div>
 
             {/* Status Guidance */}
@@ -504,28 +515,10 @@ export function ProjectDetail() {
             </div>
 
             {/* 3. Final Action */}
-            {/* 3. Final Action */}
-            {status === 'Delivered' ? (
-              <div className="bg-green-500/10 text-green-700 border border-green-500/20 p-6 rounded-xl text-center font-medium">
-                Project was delivered on {formatDate(project.deliveredAt || '')}
-              </div>
-            ) : (
-              <div className="bg-slate-900 text-slate-100 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
-                <div>
-                  <h4 className="font-semibold text-lg text-white mb-1">Mark Project as Delivered</h4>
-                  <p className="text-slate-400 text-sm">
-                    Confirm smooth handover to the client. This is the final step.
-                  </p>
-                </div>
-
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-none"
-                  onClick={() => handleStatusUpdate('delivered')}
-                  disabled={statusUpdating || dueAmount > 0 || !project.repoLink || !project.liveLink}
-                >
-                  {statusUpdating ? 'Updating...' : 'Confirm Delivery'}
-                </Button>
+            {/* 3. Final Action - Moved to header */}
+            {status === 'Delivered' && (
+              <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 p-4 rounded-lg text-sm text-center font-medium">
+                Project delivered on {formatDate(project.deliveredAt || '')}
               </div>
             )}
           </div>
