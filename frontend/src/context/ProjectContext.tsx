@@ -10,7 +10,7 @@ interface ProjectContextType {
   fetchProjects: () => Promise<void>;
   fetchProject: (id: string) => Promise<Project | null>;
   createProject: (project: Omit<Project, 'id' | 'createdAt'>) => Promise<void>;
-  updateProject: (id: string, project: Partial<Project>) => Promise<void>;
+  updateProject: (id: string, project: Partial<Project>) => Promise<Project>;
   deleteProject: (id: string) => Promise<void>;
 }
 
@@ -75,33 +75,34 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      // Find existing project to merge updates into (backend requires full object)
-      let fullProject = projects.find(p => p.id === id);
-
-      if (!fullProject) {
-        const res = await fetch(`${API_BASE_URL}/projects/${id}`);
-        if (!res.ok) throw new Error('Project not found for update');
-        fullProject = await res.json();
-      }
-
-      if (!fullProject) throw new Error('Project data unavailable');
-
-      const mergedProject = { ...fullProject, ...projectUpdates };
-
+      // Send only the changed fields (partial update)
       const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mergedProject),
+        body: JSON.stringify(projectUpdates),
       });
-      if (!response.ok) throw new Error('Failed to update project');
-      await fetchProjects();
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update project');
+      }
+
+      // Get updated project from response
+      const updatedProject: Project = await response.json();
+
+      // Update projects array with the updated project
+      setProjects((prevProjects) =>
+        prevProjects.map((p) => (p.id === id ? updatedProject : p))
+      );
+
+      return updatedProject;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [projects, fetchProjects]);
+  }, []);
 
   const deleteProject = useCallback(async (id: string) => {
     setLoading(true);

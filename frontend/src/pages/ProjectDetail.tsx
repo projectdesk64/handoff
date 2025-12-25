@@ -69,24 +69,20 @@ export function ProjectDetail() {
   const dueAmount = getDueAmount(project);
   const overdue = isOverdue(project);
 
-  const handleStatusUpdate = async (type: 'completed' | 'delivered') => {
+  const handleStatusUpdate = async (type: 'delivered') => {
     if (!project || !id) return;
     setStatusUpdating(true);
     try {
       const updates: Partial<Project> = {};
       const now = new Date().toISOString();
 
-      if (type === 'completed') {
-        updates.completedAt = now;
-      } else if (type === 'delivered') {
+      if (type === 'delivered') {
         updates.deliveredAt = now;
       }
 
-      await updateProject(id, updates);
-
-      // Refresh project to reflect changes
-      const updatedProject = await fetchProject(id);
-      if (updatedProject) setProject(updatedProject);
+      // Update project and use returned updated project
+      const updatedProject = await updateProject(id, updates);
+      setProject(updatedProject);
 
     } catch (err) {
       console.error('Failed to update status:', err);
@@ -107,16 +103,14 @@ export function ProjectDetail() {
       const amountToAdd = Number(paymentAmount); // Decimals allowed
       const newTotalReceived = (project.totalReceived || 0) + amountToAdd;
 
-      await updateProject(id, { totalReceived: newTotalReceived });
+      // Update project and use returned updated project
+      const updatedProject = await updateProject(id, { totalReceived: newTotalReceived });
+      setProject(updatedProject);
 
       // Reset local state
       setIsAddingPayment(false);
       setPaymentAmount('');
       setPaymentError(null);
-
-      // Refresh project data to show updates immediately
-      const updatedProject = await fetchProject(id);
-      if (updatedProject) setProject(updatedProject);
 
     } catch (err) {
       console.error('Failed to update payment:', err);
@@ -135,11 +129,9 @@ export function ProjectDetail() {
     }
 
     try {
-      await updateProject(id, { [field]: tempLinkValue });
-
-      // Refresh
-      const updatedProject = await fetchProject(id);
-      if (updatedProject) setProject(updatedProject);
+      // Update project and use returned updated project
+      const updatedProject = await updateProject(id, { [field]: tempLinkValue });
+      setProject(updatedProject);
 
       setEditingLink(null);
       setTempLinkValue('');
@@ -192,16 +184,6 @@ export function ProjectDetail() {
               )}
 
               {/* Status Actions */}
-              {status === 'In Progress' && (
-                <Button
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white ml-2"
-                  onClick={() => handleStatusUpdate('completed')}
-                  disabled={statusUpdating}
-                >
-                  {statusUpdating ? 'Updating...' : 'Mark as Completed'}
-                </Button>
-              )}
 
               {status === 'Ready to Deliver' && (
                 <Button
@@ -222,11 +204,7 @@ export function ProjectDetail() {
                 Delivery is paused until payment is settled.
               </p>
             )}
-            {status === 'In Progress' && (
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                Only mark as completed once all work is done.
-              </p>
-            )}
+
             {status === 'Ready to Deliver' && (
               <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
                 Payment settled. Ready for delivery.
