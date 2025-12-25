@@ -27,6 +27,9 @@ export function ProjectDetail() {
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
+  // Status UX State
+  const [statusUpdating, setStatusUpdating] = useState(false);
+
   useEffect(() => {
     if (id) {
       fetchProject(id)
@@ -62,6 +65,33 @@ export function ProjectDetail() {
   const dueAmount = getDueAmount(project);
   const linksAvailable = canAccessLinks(project);
   const overdue = isOverdue(project);
+
+  const handleStatusUpdate = async (type: 'completed' | 'delivered') => {
+    if (!project || !id) return;
+    setStatusUpdating(true);
+    try {
+      const updates: Partial<Project> = {};
+      const now = new Date().toISOString();
+
+      if (type === 'completed') {
+        updates.completedAt = now;
+      } else if (type === 'delivered') {
+        updates.deliveredAt = now;
+      }
+
+      await updateProject(id, updates);
+
+      // Refresh project to reflect changes
+      const updatedProject = await fetchProject(id);
+      if (updatedProject) setProject(updatedProject);
+
+    } catch (err) {
+      console.error('Failed to update status:', err);
+      // Optional: Show error toast/message
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
 
   const handlePaymentSubmit = async () => {
     if (!paymentAmount || isNaN(Number(paymentAmount)) || Number(paymentAmount) <= 0) {
@@ -112,19 +142,61 @@ export function ProjectDetail() {
 
         {/* SECTION 1 — PROJECT SUMMARY */}
         <section className="space-y-6">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Status Badge */}
-            <div className={`px-3 py-1 rounded-full text-sm font-medium border inline-flex items-center ${overdue
-              ? 'bg-red-50 text-red-700 border-red-200'
-              : 'bg-slate-100 text-slate-700 border-slate-200'
-              }`}>
-              {status}
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Status Badge */}
+              <div className={`px-3 py-1 rounded-full text-sm font-medium border inline-flex items-center ${overdue
+                ? 'bg-red-50 text-red-700 border-red-200'
+                : 'bg-slate-100 text-slate-700 border-slate-200'
+                }`}>
+                {status}
+              </div>
+              {/* Overdue Indicator */}
+              {overdue && (
+                <span className="text-red-600 font-bold text-sm bg-red-50 px-2 py-0.5 rounded border border-red-100">
+                  Overdue
+                </span>
+              )}
+
+              {/* Status Actions */}
+              {status === 'In Progress' && (
+                <Button
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white ml-2"
+                  onClick={() => handleStatusUpdate('completed')}
+                  disabled={statusUpdating}
+                >
+                  {statusUpdating ? 'Updating...' : 'Mark as Completed'}
+                </Button>
+              )}
+
+              {status === 'Ready to Deliver' && (
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white ml-2"
+                  onClick={() => handleStatusUpdate('delivered')}
+                  disabled={statusUpdating}
+                >
+                  {statusUpdating ? 'Updating...' : 'Mark as Delivered'}
+                </Button>
+              )}
             </div>
-            {/* Overdue Indicator */}
-            {overdue && (
-              <span className="text-red-600 font-bold text-sm bg-red-50 px-2 py-0.5 rounded border border-red-100">
-                Overdue
-              </span>
+
+            {/* Status Guidance */}
+            {status === 'Completed (Payment Pending)' && (
+              <p className="text-sm text-amber-600 font-medium flex items-center gap-2">
+                Delivery blocked: Payment pending.
+              </p>
+            )}
+            {status === 'In Progress' && (
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                Mark as completed when work is finished.
+              </p>
+            )}
+            {status === 'Ready to Deliver' && (
+              <p className="text-sm text-green-600 font-medium flex items-center gap-2">
+                Payment settled. Ready for delivery.
+              </p>
             )}
           </div>
 
