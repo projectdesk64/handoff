@@ -104,7 +104,7 @@ export function ProjectForm() {
                   onChange={handleChange}
                   required
                   placeholder="e.g. E-commerce Platform Redesign"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
                 />
               </div>
 
@@ -128,7 +128,7 @@ export function ProjectForm() {
                     value={formData.type || 'software'}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
                   >
                     <option value="software">Software</option>
                     <option value="hardware">Hardware</option>
@@ -144,7 +144,7 @@ export function ProjectForm() {
                   value={formData.description || ''}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
                 />
               </div>
 
@@ -179,8 +179,8 @@ export function ProjectForm() {
 
           {/* SECTION 2 — FINANCIALS */}
           <section className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Financials</h3>
-            <Card className="bg-gray-50/50 border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 pb-2">Financials</h3>
+            <Card className="bg-slate-50/50 border-slate-200 shadow-sm">
               <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-1 text-gray-700">Total Amount</label>
@@ -194,7 +194,7 @@ export function ProjectForm() {
                       required
                       min="0"
                       step="1"
-                      className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full pl-7 px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
@@ -247,7 +247,7 @@ export function ProjectForm() {
                   value={formData.deadline || ''}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
                 />
               </div>
 

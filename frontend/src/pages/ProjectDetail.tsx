@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProjects } from '../context/ProjectContext';
 import { Project } from '../models/Project';
-import { getProjectStatus, getDueAmount, canAccessLinks, isOverdue } from '../utils/status';
+import { getProjectStatus, getDueAmount, isOverdue } from '../utils/status';
 import { formatINR } from '../utils/currency';
 import { formatDate } from '../utils/date';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -67,7 +67,6 @@ export function ProjectDetail() {
 
   const status = getProjectStatus(project);
   const dueAmount = getDueAmount(project);
-  const linksAvailable = canAccessLinks(project);
   const overdue = isOverdue(project);
 
   const handleStatusUpdate = async (type: 'completed' | 'delivered') => {
@@ -187,7 +186,7 @@ export function ProjectDetail() {
               </div>
               {/* Overdue Indicator */}
               {overdue && (
-                <span className="text-red-600 font-bold text-sm bg-red-50 px-2 py-0.5 rounded border border-red-100">
+                <span className="text-red-700 font-medium text-xs bg-red-50 px-2 py-0.5 rounded border border-red-100">
                   Overdue
                 </span>
               )}
@@ -209,16 +208,16 @@ export function ProjectDetail() {
             {/* Status Guidance */}
             {status === 'Completed (Payment Pending)' && (
               <p className="text-sm text-amber-600 font-medium flex items-center gap-2">
-                Delivery blocked: Payment pending.
+                Delivery is paused until payment is settled.
               </p>
             )}
             {status === 'In Progress' && (
               <p className="text-sm text-muted-foreground flex items-center gap-2">
-                Mark as completed when work is finished.
+                Only mark as completed once all work is done.
               </p>
             )}
             {status === 'Ready to Deliver' && (
-              <p className="text-sm text-green-600 font-medium flex items-center gap-2">
+              <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
                 Payment settled. Ready for delivery.
               </p>
             )}
@@ -226,19 +225,19 @@ export function ProjectDetail() {
 
           <div className="flex flex-col sm:flex-row sm:items-end gap-6 sm:gap-16">
             <div>
-              <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-1">
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
                 Amount Due
               </p>
-              <p className={`text-4xl sm:text-5xl font-bold tracking-tight ${dueAmount > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+              <p className={`text-4xl sm:text-5xl font-semibold tracking-tight ${dueAmount > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
                 {dueAmount === 0 ? 'Settled' : formatINR(dueAmount)}
               </p>
             </div>
 
             <div className="pb-1">
-              <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-1">
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
                 Deadline
               </p>
-              <p className="text-xl font-medium">
+              <p className="text-xl font-medium text-slate-700">
                 {formatDate(project.deadline)}
               </p>            </div>
           </div>
@@ -248,9 +247,9 @@ export function ProjectDetail() {
 
         {/* SECTION 2 — PAYMENT DETAILS */}
         <section>
-          <Card className="rounded-xl overflow-hidden">
-            <CardHeader className="bg-muted/30 pb-4">
-              <CardTitle className="text-lg">Payment Details</CardTitle>
+          <Card className="rounded-xl overflow-hidden border-slate-200 shadow-sm">
+            <CardHeader className="pb-2 pt-6 px-6">
+              <CardTitle className="text-base font-semibold text-slate-800">Payment Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-6 text-sm">
               <div className="flex justify-between items-center">
@@ -319,10 +318,10 @@ export function ProjectDetail() {
         {/* SECTION 3 — PROJECT HANDOVER */}
         <section className="space-y-8">
           <div>
-            <h3 className="text-lg font-semibold tracking-tight mb-6 flex items-center gap-2">
+            <h3 className="text-lg font-semibold tracking-tight mb-6 flex items-center gap-2 text-slate-900">
               Project Handover
               {status === 'Delivered' && (
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full uppercase tracking-wide font-bold">
+                <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full uppercase tracking-wide font-bold">
                   Delivered
                 </span>
               )}
@@ -334,8 +333,8 @@ export function ProjectDetail() {
               <div className="space-y-3">
                 {/* Payment */}
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${dueAmount === 0
-                    ? 'bg-green-100 text-green-700 border-green-200'
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors ${dueAmount === 0
+                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
                     : 'bg-white text-slate-300 border-slate-200'
                     }`}>
                     {dueAmount === 0 && '✓'}
@@ -348,8 +347,8 @@ export function ProjectDetail() {
 
                 {/* Repo Link */}
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${project.repoLink
-                    ? 'bg-green-100 text-green-700 border-green-200'
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors ${project.repoLink
+                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
                     : 'bg-white text-slate-300 border-slate-200'
                     }`}>
                     {project.repoLink && '✓'}
@@ -362,8 +361,8 @@ export function ProjectDetail() {
 
                 {/* Live Link */}
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${project.liveLink
-                    ? 'bg-green-100 text-green-700 border-green-200'
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors ${project.liveLink
+                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
                     : 'bg-white text-slate-300 border-slate-200'
                     }`}>
                     {project.liveLink && '✓'}
@@ -375,8 +374,8 @@ export function ProjectDetail() {
                 </div>
                 {/* Video Link (Optional) */}
                 <div className="flex items-center gap-3 opacity-80">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${project.completionVideoLink
-                    ? 'bg-green-100 text-green-700 border-green-200'
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors ${project.completionVideoLink
+                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
                     : 'bg-white text-slate-300 border-slate-200'
                     }`}>
                     {project.completionVideoLink && '✓'}
@@ -531,7 +530,7 @@ export function ProjectDetail() {
               ) : (
                 <Button
                   size="lg"
-                  className="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white font-semibold"
+                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-none"
                   onClick={() => handleStatusUpdate('delivered')}
                   disabled={statusUpdating || dueAmount > 0 || !project.repoLink || !project.liveLink}
                 >
