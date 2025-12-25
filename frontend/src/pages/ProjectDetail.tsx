@@ -12,7 +12,7 @@ import { Layout } from '../components/Layout';
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { projects, fetchProject, loading: globalLoading, error } = useProjects();
+  const { projects, fetchProject, updateProject, loading: globalLoading, error } = useProjects();
 
   // Initialize project from cache if available to prevent flicker
   const [project, setProject] = useState<Project | null>(() =>
@@ -21,6 +21,11 @@ export function ProjectDetail() {
 
   // Local loading state to handle initial mount before fetch starts
   const [isInitializing, setIsInitializing] = useState(!project);
+
+  // Payment UX State
+  const [isAddingPayment, setIsAddingPayment] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -57,6 +62,34 @@ export function ProjectDetail() {
   const dueAmount = getDueAmount(project);
   const linksAvailable = canAccessLinks(project);
   const overdue = isOverdue(project);
+
+  const handlePaymentSubmit = async () => {
+    if (!paymentAmount || isNaN(Number(paymentAmount)) || Number(paymentAmount) <= 0) {
+      return; // Basic validation
+    }
+
+    if (!project || !id) return;
+
+    try {
+      const amountToAdd = Math.floor(Number(paymentAmount)); // Integer amounts preferred
+      const newTotalReceived = (project.totalReceived || 0) + amountToAdd;
+
+      await updateProject(id, { totalReceived: newTotalReceived });
+
+      // Reset local state
+      setIsAddingPayment(false);
+      setPaymentAmount('');
+      setPaymentError(null);
+
+      // Refresh project data to show updates immediately
+      const updatedProject = await fetchProject(id);
+      if (updatedProject) setProject(updatedProject);
+
+    } catch (err) {
+      console.error('Failed to update payment:', err);
+      setPaymentError('Failed to save payment. Please try again.');
+    }
+  };
 
   // Standard separator style since component is not available
   const Separator = () => <div className="h-[1px] w-full bg-border my-8" />;
@@ -130,11 +163,49 @@ export function ProjectDetail() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Advance Received</span>
-                <span className="font-medium">{formatINR(project.advanceReceived)}</span>
+                <span className="font-medium text-slate-600">{formatINR(project.advanceReceived)}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Total Received</span>
-                <span className="font-medium">{formatINR(project.totalReceived)}</span>
+
+              <div className="py-2">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-muted-foreground">Total Received {project.advanceReceived > 0 && <span className="text-xs text-muted-foreground/70">(incl. Advance)</span>}</span>
+                  <span className="font-medium">{formatINR(project.totalReceived)}</span>
+                </div>
+
+                {isAddingPayment ? (
+                  <div className="bg-slate-50 p-3 rounded-md border border-slate-200 mt-2 space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Record New Payment</label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-2 text-slate-400">₹</span>
+                        <input
+                          type="number"
+                          autoFocus
+                          placeholder="Amount"
+                          className="w-full pl-7 pr-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                          value={paymentAmount}
+                          onChange={(e) => setPaymentAmount(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handlePaymentSubmit()}
+                        />
+                      </div>
+                      <Button size="sm" onClick={handlePaymentSubmit} disabled={!paymentAmount || Number(paymentAmount) <= 0}>Save</Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setIsAddingPayment(false); setPaymentAmount(''); }}>Cancel</Button>
+                    </div>
+                    {Number(paymentAmount) > dueAmount && (
+                      <p className="text-xs text-amber-600 font-medium">
+                        Note: Payment exceeds due amount
+                      </p>
+                    )}
+                    {paymentError && <p className="text-xs text-red-500">{paymentError}</p>}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsAddingPayment(true)}
+                    className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium flex items-center gap-1 mt-1"
+                  >
+                    + Record Payment
+                  </button>
+                )}
               </div>
               <div className="my-2 h-px bg-border" />
               <div className="flex justify-between items-center text-base">
