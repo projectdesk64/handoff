@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Footer } from './Footer';
+import Logo from '../assets/logo.webp';
 
 interface LayoutProps {
     children: ReactNode;
@@ -15,8 +16,8 @@ export function Layout({ children, title, actions }: LayoutProps) {
             <header className="bg-white border-b border-gray-200">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Link to="/" className="text-xl font-bold tracking-tight text-gray-900">
-                            HandOff
+                        <Link to="/" className="flex items-center gap-2">
+                            <img src={Logo} alt="HandOff" className="h-12 w-auto" />
                         </Link>
                     </div>
                 </div>
