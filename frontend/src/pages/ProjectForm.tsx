@@ -88,8 +88,6 @@ export function ProjectForm() {
         [name]: newValue,
       };
 
-      // UX Improvement: Auto-sync Total Received when Advance changes
-      // This prevents the "Double Entry" problem where user sets Advance but forgets Total Received
       if (name === 'advanceReceived') {
         const newAdvance = newValue as number;
         const oldAdvance = prev.advanceReceived || 0;
@@ -393,18 +391,7 @@ export function ProjectForm() {
               </div>
             </div>
 
-            {isEditing && (
-              <div className="pt-2">
-                <label className="block text-sm font-medium mb-1 text-gray-600">Internal Notes</label>
-                <textarea
-                  name="internalNotes"
-                  value={formData.internalNotes || ''}
-                  onChange={handleChange}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-                />
-              </div>
-            )}
+
           </section>
 
           {/* SECTION 5 — DELIVERY INFO (OPTIONAL) */}
@@ -450,28 +437,7 @@ export function ProjectForm() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Completion Notes</label>
-                    <textarea
-                      name="completionNotes"
-                      value={formData.completionNotes || ''}
-                      onChange={handleChange}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Delivery Notes</label>
-                    <textarea
-                      name="deliveryNotes"
-                      value={formData.deliveryNotes || ''}
-                      onChange={handleChange}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                    />
-                  </div>
-                </div>
+
               </div>
             </section>
           )}
