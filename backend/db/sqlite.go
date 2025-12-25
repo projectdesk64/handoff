@@ -63,10 +63,10 @@ func runMigrations() error {
 		deadline TEXT NOT NULL,
 		completedAt TEXT,
 		deliveredAt TEXT,
-		totalAmount INTEGER NOT NULL,
-		advanceReceived INTEGER NOT NULL DEFAULT 0,
-		totalReceived INTEGER NOT NULL DEFAULT 0,
-		partnerShareGiven INTEGER DEFAULT 0,
+		totalAmount REAL NOT NULL,
+		advanceReceived REAL NOT NULL DEFAULT 0,
+		totalReceived REAL NOT NULL DEFAULT 0,
+		partnerShareGiven REAL DEFAULT 0,
 		partnerShareDate TEXT,
 		completionVideoLink TEXT,
 		completionNotes TEXT,
@@ -87,9 +87,9 @@ func runMigrations() error {
 	// Safe migration: Add new partner share columns if they don't exist
 	// SQLite lacks IF NOT EXISTS for ADD COLUMN, so we ignore specific errors
 	migrations := []string{
-		`ALTER TABLE projects ADD COLUMN harshk_share_given INTEGER DEFAULT 0;`,
+		`ALTER TABLE projects ADD COLUMN harshk_share_given REAL DEFAULT 0;`,
 		`ALTER TABLE projects ADD COLUMN harshk_share_date TEXT;`,
-		`ALTER TABLE projects ADD COLUMN nikku_share_given INTEGER DEFAULT 0;`,
+		`ALTER TABLE projects ADD COLUMN nikku_share_given REAL DEFAULT 0;`,
 		`ALTER TABLE projects ADD COLUMN nikku_share_date TEXT;`,
 	}
 

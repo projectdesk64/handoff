@@ -75,7 +75,7 @@ export function ProjectForm() {
       ...prev,
       [name]: name === 'totalAmount' || name === 'advanceReceived' || name === 'totalReceived' ||
         name === 'partnerShareGiven' || name === 'harshkShareGiven' || name === 'nikkuShareGiven'
-        ? parseInt(value) || 0
+        ? parseFloat(value) || 0
         : value,
     }));
   };

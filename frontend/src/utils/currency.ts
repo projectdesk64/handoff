@@ -3,5 +3,6 @@ export function formatINR(amount: number): string {
         style: 'currency',
         currency: 'INR',
         maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
     }).format(amount);
 }

@@ -11,26 +11,26 @@ import "database/sql"
 // - All money calculations MUST be done in the frontend only
 // - This ensures backend remains a simple data store without business logic
 type Project struct {
-	ID                string  `json:"id"`
-	Name              string  `json:"name"`
-	ClientName        *string `json:"clientName,omitempty"`
-	Description       *string `json:"description,omitempty"`
-	Type              string  `json:"type"`
-	CreatedAt         string  `json:"createdAt"`                   // ISO 8601 format (RFC3339)
-	StartDate         *string `json:"startDate,omitempty"`         // ISO 8601 format (YYYY-MM-DD or RFC3339)
-	Deadline          string  `json:"deadline"`                    // ISO 8601 format (YYYY-MM-DD or RFC3339)
-	CompletedAt       *string `json:"completedAt,omitempty"`       // ISO 8601 format (YYYY-MM-DD or RFC3339)
-	DeliveredAt       *string `json:"deliveredAt,omitempty"`       // ISO 8601 format (YYYY-MM-DD or RFC3339)
-	TotalAmount       int64   `json:"totalAmount"`                 // INTEGER type - stored in CONSTANT RUPEES (no minor units/paise)
-	AdvanceReceived   int64   `json:"advanceReceived"`             // INTEGER type - stored in CONSTANT RUPEES (no minor units/paise)
-	TotalReceived     int64   `json:"totalReceived"`               // INTEGER type - stored in CONSTANT RUPEES (no minor units/paise)
-	PartnerShareGiven *int64  `json:"partnerShareGiven,omitempty"` // INTEGER type - stored in CONSTANT RUPEES
-	PartnerShareDate  *string `json:"partnerShareDate,omitempty"`  // ISO 8601 format
+	ID                string   `json:"id"`
+	Name              string   `json:"name"`
+	ClientName        *string  `json:"clientName,omitempty"`
+	Description       *string  `json:"description,omitempty"`
+	Type              string   `json:"type"`
+	CreatedAt         string   `json:"createdAt"`                   // ISO 8601 format (RFC3339)
+	StartDate         *string  `json:"startDate,omitempty"`         // ISO 8601 format (YYYY-MM-DD or RFC3339)
+	Deadline          string   `json:"deadline"`                    // ISO 8601 format (YYYY-MM-DD or RFC3339)
+	CompletedAt       *string  `json:"completedAt,omitempty"`       // ISO 8601 format (YYYY-MM-DD or RFC3339)
+	DeliveredAt       *string  `json:"deliveredAt,omitempty"`       // ISO 8601 format (YYYY-MM-DD or RFC3339)
+	TotalAmount       float64  `json:"totalAmount"`                 // REAL type - stored in DECIMAL RUPEES
+	AdvanceReceived   float64  `json:"advanceReceived"`             // REAL type - stored in DECIMAL RUPEES
+	TotalReceived     float64  `json:"totalReceived"`               // REAL type - stored in DECIMAL RUPEES
+	PartnerShareGiven *float64 `json:"partnerShareGiven,omitempty"` // REAL type - stored in DECIMAL RUPEES
+	PartnerShareDate  *string  `json:"partnerShareDate,omitempty"`  // ISO 8601 format
 	// New Explicit Partner Shares
-	HarshkShareGiven *int64  `json:"harshkShareGiven,omitempty"` // INTEGER
-	HarshkShareDate  *string `json:"harshkShareDate,omitempty"`  // ISO 8601
-	NikkuShareGiven  *int64  `json:"nikkuShareGiven,omitempty"`  // INTEGER
-	NikkuShareDate   *string `json:"nikkuShareDate,omitempty"`   // ISO 8601
+	HarshkShareGiven *float64 `json:"harshkShareGiven,omitempty"` // REAL
+	HarshkShareDate  *string  `json:"harshkShareDate,omitempty"`  // ISO 8601
+	NikkuShareGiven  *float64 `json:"nikkuShareGiven,omitempty"`  // REAL
+	NikkuShareDate   *string  `json:"nikkuShareDate,omitempty"`   // ISO 8601
 
 	CompletionVideoLink *string `json:"completionVideoLink,omitempty"`
 	CompletionNotes     *string `json:"completionNotes,omitempty"`

@@ -104,7 +104,7 @@ export function ProjectDetail() {
     if (!project || !id) return;
 
     try {
-      const amountToAdd = Math.floor(Number(paymentAmount)); // Integer amounts preferred
+      const amountToAdd = Number(paymentAmount); // Decimals allowed
       const newTotalReceived = (project.totalReceived || 0) + amountToAdd;
 
       await updateProject(id, { totalReceived: newTotalReceived });
@@ -277,6 +277,7 @@ export function ProjectDetail() {
                           type="number"
                           autoFocus
                           placeholder="Amount"
+                          step="1"
                           className="w-full pl-7 pr-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
