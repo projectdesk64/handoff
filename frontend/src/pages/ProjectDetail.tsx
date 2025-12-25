@@ -393,9 +393,6 @@ export function ProjectDetail() {
               {/* Repo */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border rounded-lg gap-4">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="bg-slate-100 p-2 rounded-md text-slate-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0 3 1.5-2.64-.5-5.36.5-8 0C6 2 5 2 4 2c-3.5 1-4 3.5-4 4A6 6 0 0 0 0 9c0 4 3 4 5 5v4"></path></svg>
-                  </div>
                   <div className="min-w-0">
                     <p className="font-medium text-sm text-slate-900">Source Code Repository</p>
                     {editingLink !== 'repo' && (
@@ -433,9 +430,6 @@ export function ProjectDetail() {
               {/* Live */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border rounded-lg gap-4">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="bg-slate-100 p-2 rounded-md text-slate-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                  </div>
                   <div className="min-w-0">
                     <p className="font-medium text-sm text-slate-900">Live Website</p>
                     {editingLink !== 'live' && (
@@ -473,9 +467,6 @@ export function ProjectDetail() {
               {/* Video */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border rounded-lg gap-4">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="bg-slate-100 p-2 rounded-md text-slate-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-                  </div>
                   <div className="min-w-0">
                     <p className="font-medium text-sm text-slate-900">Completion Video</p>
                     {editingLink !== 'video' && (
@@ -512,22 +503,20 @@ export function ProjectDetail() {
             </div>
 
             {/* 3. Final Action */}
-            <div className="bg-slate-900 text-slate-100 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
-              <div>
-                <h4 className="font-semibold text-lg text-white mb-1">Mark Project as Delivered</h4>
-                <p className="text-slate-400 text-sm">
-                  {status === 'Delivered'
-                    ? `Project was delivered on ${formatDate(project.deliveredAt || '')}`
-                    : "Confirm smooth handover to the client. This is the final step."}
-                </p>
+            {/* 3. Final Action */}
+            {status === 'Delivered' ? (
+              <div className="bg-green-500/10 text-green-700 border border-green-500/20 p-6 rounded-xl text-center font-medium">
+                Project was delivered on {formatDate(project.deliveredAt || '')}
               </div>
-
-              {status === 'Delivered' ? (
-                <div className="bg-green-500/10 text-green-400 border border-green-500/20 px-4 py-2 rounded-lg font-medium flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  Delivered
+            ) : (
+              <div className="bg-slate-900 text-slate-100 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm">
+                <div>
+                  <h4 className="font-semibold text-lg text-white mb-1">Mark Project as Delivered</h4>
+                  <p className="text-slate-400 text-sm">
+                    Confirm smooth handover to the client. This is the final step.
+                  </p>
                 </div>
-              ) : (
+
                 <Button
                   size="lg"
                   className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-none"
@@ -536,8 +525,8 @@ export function ProjectDetail() {
                 >
                   {statusUpdating ? 'Updating...' : 'Confirm Delivery'}
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -565,34 +554,15 @@ export function ProjectDetail() {
               <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">{project.deliverables || '—'}</p>
             </div>
 
-            {(project.completionNotes || project.deliveryNotes || project.internalNotes) && (
+            {project.completionNotes && (
               <div className="md:col-span-2 space-y-6 pt-2">
-                {project.completionNotes && (
-                  <div className="bg-muted/30 p-4 rounded-lg">
-                    <h4 className="font-medium text-muted-foreground mb-2 flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                      Completion Notes
-                    </h4>
-                    <p className="whitespace-pre-wrap text-foreground/90">{project.completionNotes}</p>
-                  </div>
-                )}
-                {project.deliveryNotes && (
-                  <div className="bg-muted/30 p-4 rounded-lg">
-                    <h4 className="font-medium text-muted-foreground mb-2 flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                      Delivery Notes
-                    </h4>
-                    <p className="whitespace-pre-wrap text-foreground/90">{project.deliveryNotes}</p>
-                  </div>
-                )}
-                {project.internalNotes && (
-                  <div className="bg-yellow-50/50 p-4 rounded-lg border border-yellow-100/50">
-                    <h4 className="font-medium text-yellow-700/80 mb-2 flex items-center gap-2 text-xs uppercase tracking-wider">
-                      Internal
-                    </h4>
-                    <p className="whitespace-pre-wrap text-foreground/90">{project.internalNotes}</p>
-                  </div>
-                )}
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <h4 className="font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Completion Notes
+                  </h4>
+                  <p className="whitespace-pre-wrap text-foreground/90">{project.completionNotes}</p>
+                </div>
               </div>
             )}
           </div>
