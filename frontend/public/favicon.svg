@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cube Faces -->
+  <path d="M256 256 L463.8 136 V376 L256 496 V256 Z" fill="#1D4ED8"/>
+  <path d="M256 256 L48.2 136 V376 L256 496 V256 Z" fill="#2563EB"/>
+  <path d="M256 256 L463.8 136 L256 16 L48.2 136 L256 256 Z" fill="#3B82F6"/>
+  
+  <!-- Arrow on Right Face -->
+  <!-- Moving down and right to center it -->
+  <!-- Previous: translate(280, 240) -->
+  <!-- New: translate(295, 260) to center on right face centroid approx (360, 316) -->
+  <g transform="translate(295, 260) skewY(-30)">
+      <path d="M0 45 L75 45 L75 5 L155 70 L75 135 L75 95 L0 95 Z" fill="white"/>
+  </g>
+</svg>
