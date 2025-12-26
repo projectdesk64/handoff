@@ -180,16 +180,16 @@ export function ProjectDetail() {
     <Layout
       title={project.name}
       actions={
-        <div className="flex gap-2 items-center">
-          <Button variant="ghost" onClick={() => navigate('/')}>
-            Back
-          </Button>
-          <Button variant="outline" onClick={() => navigate(`/projects/${project.id}/edit`)}>
-            Edit
-          </Button>
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" onClick={() => navigate('/')}>
+              Back
+            </Button>
+            <Button variant="outline" onClick={() => navigate(`/projects/${project.id}/edit`)}>
+              Edit
+            </Button>
 
-          {status === 'Ready to Deliver' && (
-            <div className="flex flex-col items-end gap-1">
+            {status === 'Ready to Deliver' && (
               <Button
                 className="bg-success hover:bg-success/90 text-primary-foreground"
                 onClick={() => handleStatusUpdate('delivered')}
@@ -204,23 +204,9 @@ export function ProjectDetail() {
                   'Mark as Delivered'
                 )}
               </Button>
-              <AnimatePresence>
-                {missingDeliveryDetails.length > 0 && (
-                  <FeedbackMessage type="info" className="text-[10px] text-right">
-                    Missing: {missingDeliveryDetails.join(', ')}
-                  </FeedbackMessage>
-                )}
-                {dueAmount > 0 && (
-                  <FeedbackMessage type="warning" className="text-[10px] text-right">
-                    Payment pending
-                  </FeedbackMessage>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
+            )}
 
-          {status === 'In Progress' && (
-            <div className="flex flex-col items-end gap-1">
+            {status === 'In Progress' && (
               <Button
                 onClick={() => handleStatusUpdate('completed')}
                 disabled={statusUpdating || missingCompletionDetails.length > 0}
@@ -234,15 +220,33 @@ export function ProjectDetail() {
                   'Mark as Completed'
                 )}
               </Button>
-              <AnimatePresence>
-                {missingCompletionDetails.length > 0 && (
+            )}
+          </div>
+
+          <AnimatePresence>
+            {status === 'Ready to Deliver' && (
+              <div className="flex flex-col items-end">
+                {missingDeliveryDetails.length > 0 && (
                   <FeedbackMessage type="info" className="text-[10px] text-right">
-                    Missing: {missingCompletionDetails.join(', ')}
+                    Missing: {missingDeliveryDetails.join(', ')}
                   </FeedbackMessage>
                 )}
-              </AnimatePresence>
-            </div>
-          )}
+                {dueAmount > 0 && (
+                  <FeedbackMessage type="warning" className="text-[10px] text-right">
+                    Payment pending
+                  </FeedbackMessage>
+                )}
+              </div>
+            )}
+
+            {status === 'In Progress' && missingCompletionDetails.length > 0 && (
+              <div className="flex flex-col items-end">
+                <FeedbackMessage type="info" className="text-[10px] text-right">
+                  Missing: {missingCompletionDetails.join(', ')}
+                </FeedbackMessage>
+              </div>
+            )}
+          </AnimatePresence>
         </div>
       }
     >
