@@ -59,21 +59,9 @@ export function validateProject(project: Partial<any>): ValidationResult {
   })
 
   // JSON validation for techStack and deliverables
-  if (project.techStack && project.techStack.trim() !== '') {
-    try {
-      JSON.parse(project.techStack)
-    } catch {
-      errors.push({ field: 'techStack', message: 'Tech stack must be valid JSON' })
-    }
-  }
 
-  if (project.deliverables && project.deliverables.trim() !== '') {
-    try {
-      JSON.parse(project.deliverables)
-    } catch {
-      errors.push({ field: 'deliverables', message: 'Deliverables must be valid JSON' })
-    }
-  }
+
+
 
   return {
     isValid: errors.length === 0,
@@ -91,15 +79,7 @@ export function validateURL(url: string): boolean {
   }
 }
 
-export function validateJSON(jsonString: string): boolean {
-  if (!jsonString || jsonString.trim() === '') return true // Empty is valid (optional field)
-  try {
-    JSON.parse(jsonString)
-    return true
-  } catch {
-    return false
-  }
-}
+
 
 export function validateAmount(amount: number | string): boolean {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount

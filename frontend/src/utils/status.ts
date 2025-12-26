@@ -54,7 +54,7 @@ export function isOverdue(project: Project): boolean {
 }
 
 export function isProjectFullyDetailed(project: Project): boolean {
-  const hasMetadata = !!(project.clientName && project.techStack && project.deliverables);
+  const hasMetadata = !!(project.clientName && project.techStack && project.techStack.length > 0 && project.deliverables && project.deliverables.length > 0);
   const hasLinks = !!(project.repoLink && project.liveLink && project.completionVideoLink);
   const hasShares = (project.harshkShareGiven !== undefined && project.harshkShareGiven !== null) &&
     (project.nikkuShareGiven !== undefined && project.nikkuShareGiven !== null);
@@ -65,8 +65,8 @@ export function isProjectFullyDetailed(project: Project): boolean {
 export function getMissingCompletionRequirements(project: Project): string[] {
   const missing: string[] = [];
   if (!project.clientName) missing.push('Client name');
-  if (!project.techStack) missing.push('Tech stack');
-  if (!project.deliverables) missing.push('Deliverables');
+  if (!project.techStack || project.techStack.length === 0) missing.push('Tech stack');
+  if (!project.deliverables || project.deliverables.length === 0) missing.push('Deliverables');
   return missing;
 }
 

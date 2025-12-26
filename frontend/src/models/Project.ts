@@ -24,8 +24,8 @@ export interface Project {
   repoLink?: string;
   liveLink?: string;
   deliveryNotes?: string;
-  techStack?: string;
-  deliverables?: string;
+  techStack?: string[];
+  deliverables?: string[];
   internalNotes?: string;
 }
 

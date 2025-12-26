@@ -3,6 +3,45 @@ import { Project } from '../models/Project';
 
 const API_BASE_URL = 'http://localhost:8080';
 
+// Helper to normalize backend data (JSON strings -> Arrays)
+const normalizeProject = (data: any): Project => {
+  const normalizeArrayField = (field: any): string[] => {
+    if (!field) return [];
+    if (Array.isArray(field)) return field; // Should not happen if backend sends strings, but safe
+    if (typeof field === 'string') {
+      try {
+        const parsed = JSON.parse(field);
+        return Array.isArray(parsed) ? parsed : [field];
+      } catch {
+        // If not valid JSON, treat as single item or empty
+        return field.trim() ? [field] : [];
+      }
+    }
+    return [];
+  };
+
+  return {
+    ...data,
+    techStack: normalizeArrayField(data.techStack),
+    deliverables: normalizeArrayField(data.deliverables),
+  };
+};
+
+// Helper to serialize frontend data (Arrays -> JSON strings)
+const serializeProject = (project: Partial<Project>): any => {
+  const serialized = { ...project };
+
+  if (project.techStack !== undefined) {
+    (serialized as any).techStack = JSON.stringify(project.techStack);
+  }
+
+  if (project.deliverables !== undefined) {
+    (serialized as any).deliverables = JSON.stringify(project.deliverables);
+  }
+
+  return serialized;
+};
+
 interface ProjectContextType {
   projects: Project[];
   loading: boolean;
@@ -36,7 +75,7 @@ export function ProjectProvider({ children, toast }: ProjectProviderProps) {
       const response = await fetch(`${API_BASE_URL}/projects`);
       if (!response.ok) throw new Error('Failed to fetch projects');
       const data = await response.json();
-      setProjects(Array.isArray(data) ? data : []);
+      setProjects(Array.isArray(data) ? data.map(normalizeProject) : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -51,7 +90,7 @@ export function ProjectProvider({ children, toast }: ProjectProviderProps) {
       const response = await fetch(`${API_BASE_URL}/projects/${id}`);
       if (!response.ok) throw new Error('Failed to fetch project');
       const data = await response.json();
-      return data;
+      return normalizeProject(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
@@ -67,7 +106,7 @@ export function ProjectProvider({ children, toast }: ProjectProviderProps) {
       const response = await fetch(`${API_BASE_URL}/projects`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(project),
+        body: JSON.stringify(serializeProject(project)),
       });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -93,7 +132,7 @@ export function ProjectProvider({ children, toast }: ProjectProviderProps) {
       const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(projectUpdates),
+        body: JSON.stringify(serializeProject(projectUpdates)),
       });
 
       if (!response.ok) {
@@ -102,7 +141,8 @@ export function ProjectProvider({ children, toast }: ProjectProviderProps) {
       }
 
       // Get updated project from response
-      const updatedProject: Project = await response.json();
+      const rawUpdatedProject = await response.json();
+      const updatedProject = normalizeProject(rawUpdatedProject);
 
       // Update projects array with the updated project
       setProjects((prevProjects) =>

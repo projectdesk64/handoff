@@ -5,7 +5,7 @@ import { Project } from '../models/Project';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Layout } from '../components/Layout';
-import { validateProject, validateURL, validateJSON } from '../utils/validation';
+import { validateProject, validateURL } from '../utils/validation';
 import { useToast } from '../context/ToastContext';
 
 export function ProjectForm() {
@@ -28,6 +28,51 @@ export function ProjectForm() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Helper handling array field input
+  // Since we display arrays as comma-separated strings in textareas, we need a way to track the raw string input
+  // before splitting it into an array on submit/update or using split on every change.
+  // For simplicity: We will rely on treating them as strings in the form state (for editing) and parse on submit?
+  // Wait, the form state `formData` uses `Partial<Project>`. `Project` now has `string[]`.
+  // But `<textarea>` needs a string.
+  // We will maintain local state or derived state for these inputs.
+
+  // Actually, let's keep it simple: join on render, split on change.
+  // This might be annoying if typing "Vue, ", so we should only split on blur or keep a local string state.
+  // Let's assume we update the ARRAY in formData on every change by splitting the string value.
+  // BUT: "React," -> ["React", ""] -> if we join back it becomes "React,".
+  // "React, " -> ["React", " "] -> "React, ".
+  // This works.
+
+  // NOTE: Simple split/join strategy:
+  // value={formData.techStack?.join(', ') || ''}
+  // onChange={(e) => update({ techStack: e.target.value.split(',').map(s => s.trim()) })}
+  // Issue: Typing "React," immediately becomes "React" if we trim and join back? No.
+  // If we split on every change, we need to be careful.
+
+  // BETTER STRATEGY for Textareas:
+  // Render `defaultValue` or use a separate local state for the string representation, sync on blur/submit?
+  // Or: Just use string state for the textareas and convert to array in `formData` only when calling context?
+  //
+  // Given constraints: We want to modify ProjectForm to work with the new type.
+  // Let's change `formData` to hold local string versions for these two fields, 
+  // OR cast them.
+  //
+  // Let's simply cast safely in the render: `(formData.techStack || []).join(', ')`
+  // And update `formData.techStack` by splitting on change.
+  // To avoid cursor jumping/trimming issues while typing, we CANNOT split/trim on every keypress if we also map back to value.
+  //
+  // Solution: Use `string` in `formData` temporarily? No, type safety.
+  // Solution: Use local string state for these two fields.
+
+  const [techStackInput, setTechStackInput] = useState('');
+  const [deliverablesInput, setDeliverablesInput] = useState('');
+
+  // Sync form data to local state when loaded
+  useEffect(() => {
+    if (formData.techStack) setTechStackInput(formData.techStack.join(', '));
+    if (formData.deliverables) setDeliverablesInput(formData.deliverables.join(', '));
+  }, [formData.techStack, formData.deliverables]);
 
   useEffect(() => {
     if (isEditing && id) {
@@ -84,15 +129,7 @@ export function ProjectForm() {
         });
       }
     } else if (field === 'techStack' || field === 'deliverables') {
-      if (formData[field as keyof Project] && !validateJSON(formData[field as keyof Project] as string)) {
-        setErrors((prev) => ({ ...prev, [field]: 'Invalid JSON format' }));
-      } else {
-        setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[field];
-          return newErrors;
-        });
-      }
+      // No validation needed for simple strings
     }
   };
 
@@ -223,14 +260,21 @@ export function ProjectForm() {
               {isEditing && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-foreground">Tech Stack (JSON)</label>
+                    <label className="block text-sm font-medium mb-1 text-foreground">Tech Stack (Comma separated)</label>
                     <textarea
                       name="techStack"
-                      value={formData.techStack || ''}
-                      onChange={handleChange}
+                      value={techStackInput}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTechStackInput(val);
+                        setFormData(prev => ({
+                          ...prev,
+                          techStack: val.split(',').map(s => s.trim()).filter(Boolean)
+                        }));
+                      }}
                       onBlur={() => handleBlur('techStack')}
                       rows={2}
-                      placeholder='["React", "Node.js"]'
+                      placeholder="React, Node.js, TypeScript"
                       className={`w-full px-3 py-2 border rounded-md font-mono text-sm bg-muted/50 ${errors.techStack ? 'border-destructive' : 'border-input'
                         }`}
                     />
@@ -239,14 +283,21 @@ export function ProjectForm() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-foreground">Deliverables (JSON)</label>
+                    <label className="block text-sm font-medium mb-1 text-foreground">Deliverables (Comma separated)</label>
                     <textarea
                       name="deliverables"
-                      value={formData.deliverables || ''}
-                      onChange={handleChange}
+                      value={deliverablesInput}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setDeliverablesInput(val);
+                        setFormData(prev => ({
+                          ...prev,
+                          deliverables: val.split(',').map(s => s.trim()).filter(Boolean)
+                        }));
+                      }}
                       onBlur={() => handleBlur('deliverables')}
                       rows={2}
-                      placeholder='["Source Code", "Documentation"]'
+                      placeholder="Source Code, Documentation, Deployment"
                       className={`w-full px-3 py-2 border rounded-md font-mono text-sm bg-muted/50 ${errors.deliverables ? 'border-destructive' : 'border-input'
                         }`}
                     />
