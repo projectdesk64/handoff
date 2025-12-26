@@ -4,32 +4,48 @@
 
 @layer base {
   :root {
-    /* Base */
-    --background: 240 8% 98%;
-    --foreground: 222 30% 16%;
+    /* Base Colors - Subtle Blue-Gray Background */
+    --background: 220 12% 97%;
+    --foreground: 222 25% 18%;
 
-    /* Surfaces */
-    --card: 0 0% 100%;
-    --card-foreground: 222 30% 16%;
+    /* Card */
+    --card: 220 8% 99%;
+    --card-foreground: 222 25% 18%;
 
-    /* Brand */
+    /* Primary */
     --primary: 220 30% 35%;
     --primary-foreground: 0 0% 100%;
 
-    /* Neutrals */
-    --secondary: 220 12% 94%;
-    --secondary-foreground: 222 30% 16%;
-    --muted: 220 10% 96%;
+    /* Secondary */
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 222 25% 18%;
+
+    /* Muted */
+    --muted: 220 12% 96%;
     --muted-foreground: 215 12% 42%;
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 220 30% 35%;
+
+    /* Accent */
+    --accent: 220 18% 95%;
+    --accent-foreground: 222 25% 18%;
 
     /* Status */
     --success: 160 30% 42%;
+    --success-foreground: 0 0% 100%;
     --warning: 35 45% 52%;
+    --warning-foreground: 0 0% 100%;
     --error: 0 40% 48%;
+    --error-foreground: 0 0% 100%;
     --info: 220 35% 40%;
+    --info-foreground: 0 0% 100%;
+
+    /* Borders & Inputs */
+    --border: 220 18% 88%;
+    --input: 220 18% 88%;
+    --ring: 220 30% 35%;
+
+    /* Destructive */
+    --destructive: 0 40% 48%;
+    --destructive-foreground: 0 0% 100%;
 
     --radius: 0.5rem;
   }

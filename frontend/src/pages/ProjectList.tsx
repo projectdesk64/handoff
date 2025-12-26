@@ -133,7 +133,7 @@ export function ProjectList() {
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
                         <div className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${overdue
                           ? 'bg-destructive/10 text-destructive border-destructive/20'
-                          : 'bg-muted text-secondary-foreground border-border'
+                          : 'bg-secondary text-secondary-foreground border-border'
                           }`}>
                           {status}
                           {overdue && <span className="font-semibold ml-1">(Overdue)</span>}

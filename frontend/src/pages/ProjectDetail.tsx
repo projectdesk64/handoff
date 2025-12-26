@@ -382,7 +382,7 @@ export function ProjectDetail() {
                     <input
                       type="url"
                       placeholder="https://..."
-                      className="flex-1 text-sm border-slate-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                      className="flex-1 text-sm border-input rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-ring"
                       value={tempLinkValue}
                       onChange={(e) => setTempLinkValue(e.target.value)}
                       autoFocus
@@ -423,7 +423,7 @@ export function ProjectDetail() {
                     <input
                       type="url"
                       placeholder="https://loom.com/..."
-                      className="flex-1 text-sm border-slate-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                      className="flex-1 text-sm border-input rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-ring"
                       value={tempLinkValue}
                       onChange={(e) => setTempLinkValue(e.target.value)}
                       autoFocus
