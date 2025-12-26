@@ -5,7 +5,7 @@ import { Project } from '../models/Project';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Layout } from '../components/Layout';
-import { validateProject, getFieldError, validateURL, validateJSON } from '../utils/validation';
+import { validateProject, validateURL, validateJSON } from '../utils/validation';
 import { useToast } from '../context/ToastContext';
 
 export function ProjectForm() {
@@ -42,7 +42,7 @@ export function ProjectForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
     const validation = validateProject(formData);
     if (!validation.isValid) {
@@ -69,7 +69,7 @@ export function ProjectForm() {
 
   const handleBlur = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
-    
+
     // Validate individual field
     if (field === 'repoLink' || field === 'liveLink' || field === 'completionVideoLink') {
       if (formData[field as keyof Project] && !validateURL(formData[field as keyof Project] as string)) {
@@ -157,11 +157,11 @@ export function ProjectForm() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* SECTION 1 — PROJECT INFO */}
           <section className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Project Info</h3>
+            <h3 className="text-lg font-semibold text-foreground border-b pb-2">Project Info</h3>
 
             <div className="grid gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">Project Name *</label>
+                <label className="block text-sm font-medium mb-1 text-foreground">Project Name *</label>
                 <input
                   type="text"
                   name="name"
@@ -170,36 +170,35 @@ export function ProjectForm() {
                   onBlur={() => handleBlur('name')}
                   required
                   placeholder="e.g. E-commerce Platform Redesign"
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all ${
-                    errors.name ? 'border-red-500' : 'border-slate-300'
-                  }`}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all ${errors.name ? 'border-destructive' : 'border-input'
+                    }`}
                 />
                 {errors.name && touched.name && (
-                  <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.name}</p>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Client Name</label>
+                  <label className="block text-sm font-medium mb-1 text-foreground">Client Name</label>
                   <input
                     type="text"
                     name="clientName"
                     value={formData.clientName || ''}
                     onChange={handleChange}
                     placeholder="e.g. Acme Corp"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Project Type *</label>
+                  <label className="block text-sm font-medium mb-1 text-foreground">Project Type *</label>
                   <select
                     name="type"
                     value={formData.type || 'software'}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                   >
                     <option value="software">Software</option>
                     <option value="hardware">Hardware</option>
@@ -209,20 +208,20 @@ export function ProjectForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">Description</label>
+                <label className="block text-sm font-medium mb-1 text-foreground">Description</label>
                 <textarea
                   name="description"
                   value={formData.description || ''}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
+                  className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                 />
               </div>
 
               {isEditing && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Tech Stack (JSON)</label>
+                    <label className="block text-sm font-medium mb-1 text-foreground">Tech Stack (JSON)</label>
                     <textarea
                       name="techStack"
                       value={formData.techStack || ''}
@@ -230,16 +229,15 @@ export function ProjectForm() {
                       onBlur={() => handleBlur('techStack')}
                       rows={2}
                       placeholder='["React", "Node.js"]'
-                      className={`w-full px-3 py-2 border rounded-md font-mono text-sm bg-gray-50 ${
-                        errors.techStack ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-md font-mono text-sm bg-muted/50 ${errors.techStack ? 'border-destructive' : 'border-input'
+                        }`}
                     />
                     {errors.techStack && touched.techStack && (
-                      <p className="text-sm text-red-500 mt-1">{errors.techStack}</p>
+                      <p className="text-sm text-destructive mt-1">{errors.techStack}</p>
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Deliverables (JSON)</label>
+                    <label className="block text-sm font-medium mb-1 text-foreground">Deliverables (JSON)</label>
                     <textarea
                       name="deliverables"
                       value={formData.deliverables || ''}
@@ -247,12 +245,11 @@ export function ProjectForm() {
                       onBlur={() => handleBlur('deliverables')}
                       rows={2}
                       placeholder='["Source Code", "Documentation"]'
-                      className={`w-full px-3 py-2 border rounded-md font-mono text-sm bg-gray-50 ${
-                        errors.deliverables ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-md font-mono text-sm bg-muted/50 ${errors.deliverables ? 'border-destructive' : 'border-input'
+                        }`}
                     />
                     {errors.deliverables && touched.deliverables && (
-                      <p className="text-sm text-red-500 mt-1">{errors.deliverables}</p>
+                      <p className="text-sm text-destructive mt-1">{errors.deliverables}</p>
                     )}
                   </div>
                 </>
@@ -262,13 +259,13 @@ export function ProjectForm() {
 
           {/* SECTION 2 — FINANCIALS */}
           <section className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 pb-2">Financials</h3>
-            <Card className="bg-slate-50/50 border-slate-200 shadow-sm">
+            <h3 className="text-lg font-semibold text-foreground pb-2">Financials</h3>
+            <Card className="bg-muted/30 border-border shadow-sm">
               <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Total Amount</label>
+                  <label className="block text-sm font-medium mb-1 text-foreground">Total Amount</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-500">₹</span>
+                    <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                     <input
                       type="number"
                       name="totalAmount"
@@ -277,15 +274,15 @@ export function ProjectForm() {
                       required
                       min="0"
                       step="1"
-                      className="w-full pl-7 px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
+                      className="w-full pl-7 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Advance Received</label>
+                  <label className="block text-sm font-medium mb-1 text-foreground">Advance Received</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-500">₹</span>
+                    <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                     <input
                       type="number"
                       name="advanceReceived"
@@ -293,15 +290,15 @@ export function ProjectForm() {
                       onChange={handleChange}
                       min="0"
                       step="1"
-                      className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full pl-7 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Total Received</label>
+                  <label className="block text-sm font-medium mb-1 text-foreground">Total Received</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-500">₹</span>
+                    <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                     <input
                       type="number"
                       name="totalReceived"
@@ -309,40 +306,40 @@ export function ProjectForm() {
                       onChange={handleChange}
                       min="0"
                       step="1"
-                      className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full pl-7 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
                 </div>
               </CardContent>
             </Card>
-            <p className="text-xs text-gray-500 px-1">All amounts are in Indian Rupees (₹)</p>
+            <p className="text-xs text-muted-foreground px-1">All amounts are in Indian Rupees (₹)</p>
           </section>
 
           {/* SECTION 3 — TIMELINE */}
           <section className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Timeline</h3>
+            <h3 className="text-lg font-semibold text-foreground border-b pb-2">Timeline</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1 text-gray-700">Deadline *</label>
+                <label className="block text-sm font-medium mb-1 text-foreground">Deadline *</label>
                 <input
                   type="date"
                   name="deadline"
                   value={formData.deadline || ''}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all"
+                  className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                 />
               </div>
 
               {isEditing && (
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Start Date</label>
+                  <label className="block text-sm font-medium mb-1 text-foreground">Start Date</label>
                   <input
                     type="date"
                     name="startDate"
                     value={formData.startDate || ''}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
               )}
@@ -350,23 +347,23 @@ export function ProjectForm() {
               {isEditing && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Completed At</label>
+                    <label className="block text-sm font-medium mb-1 text-foreground">Completed At</label>
                     <input
                       type="datetime-local"
                       name="completedAt"
                       value={toLocalISOString(formData.completedAt)}
                       onChange={handleDateTimeChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Delivered At</label>
+                    <label className="block text-sm font-medium mb-1 text-foreground">Delivered At</label>
                     <input
                       type="datetime-local"
                       name="deliveredAt"
                       value={toLocalISOString(formData.deliveredAt)}
                       onChange={handleDateTimeChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
                 </>
@@ -377,18 +374,18 @@ export function ProjectForm() {
           {/* SECTION 4 — PARTNER SHARE */}
           <section className="space-y-4 opacity-90">
             <div className="flex items-center gap-2 border-b pb-2">
-              <h3 className="text-lg font-semibold text-gray-700">Partner Share (Internal)</h3>
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border">Internal</span>
+              <h3 className="text-lg font-semibold text-foreground">Partner Share (Internal)</h3>
+              <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full border">Internal</span>
             </div>
 
             {/* HARSHK ROW */}
-            <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
-              <h4 className="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Harshk</h4>
+            <div className="bg-muted/50 p-4 rounded-lg border border-border">
+              <h4 className="text-sm font-bold text-foreground mb-3 uppercase tracking-wider">Harshk</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-600">Share Given (₹)</label>
+                  <label className="block text-sm font-medium mb-1 text-muted-foreground">Share Given (₹)</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-400">₹</span>
+                    <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                     <input
                       type="number"
                       name="harshkShareGiven"
@@ -396,12 +393,12 @@ export function ProjectForm() {
                       onChange={handleChange}
                       min="0"
                       step="1"
-                      className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                      className="w-full pl-7 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-600">Date Given</label>
+                  <label className="block text-sm font-medium mb-1 text-muted-foreground">Date Given</label>
                   <input
                     type="date"
                     name="harshkShareDate"
@@ -412,20 +409,20 @@ export function ProjectForm() {
                         harshkShareDate: e.target.value ? new Date(e.target.value).toISOString() : undefined,
                       }));
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
               </div>
             </div>
 
             {/* NIKKU ROW */}
-            <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
-              <h4 className="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Nikku</h4>
+            <div className="bg-muted/50 p-4 rounded-lg border border-border">
+              <h4 className="text-sm font-bold text-foreground mb-3 uppercase tracking-wider">Nikku</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-600">Share Given (₹)</label>
+                  <label className="block text-sm font-medium mb-1 text-muted-foreground">Share Given (₹)</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-400">₹</span>
+                    <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                     <input
                       type="number"
                       name="nikkuShareGiven"
@@ -433,12 +430,12 @@ export function ProjectForm() {
                       onChange={handleChange}
                       min="0"
                       step="1"
-                      className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                      className="w-full pl-7 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-600">Date Given</label>
+                  <label className="block text-sm font-medium mb-1 text-muted-foreground">Date Given</label>
                   <input
                     type="date"
                     name="nikkuShareDate"
@@ -449,7 +446,7 @@ export function ProjectForm() {
                         nikkuShareDate: e.target.value ? new Date(e.target.value).toISOString() : undefined,
                       }));
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
               </div>
@@ -461,12 +458,12 @@ export function ProjectForm() {
           {/* SECTION 5 — DELIVERY INFO (OPTIONAL) */}
           {isEditing && (
             <section className="space-y-4 border-t pt-6 mt-8">
-              <h3 className="text-lg font-semibold text-gray-900">Delivery Info <span className="text-gray-400 font-normal text-sm ml-2">(Optional)</span></h3>
+              <h3 className="text-lg font-semibold text-foreground">Delivery Info <span className="text-muted-foreground font-normal text-sm ml-2">(Optional)</span></h3>
 
               <div className="grid gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Completion Video Link</label>
+                    <label className="block text-sm font-medium mb-1 text-foreground">Completion Video Link</label>
                     <input
                       type="url"
                       name="completionVideoLink"
@@ -474,16 +471,15 @@ export function ProjectForm() {
                       onChange={handleChange}
                       onBlur={() => handleBlur('completionVideoLink')}
                       placeholder="https://loom.com/..."
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black ${
-                        errors.completionVideoLink ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring ${errors.completionVideoLink ? 'border-destructive' : 'border-input'
+                        }`}
                     />
                     {errors.completionVideoLink && touched.completionVideoLink && (
-                      <p className="text-sm text-red-500 mt-1">{errors.completionVideoLink}</p>
+                      <p className="text-sm text-destructive mt-1">{errors.completionVideoLink}</p>
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Repository Link</label>
+                    <label className="block text-sm font-medium mb-1 text-foreground">Repository Link</label>
                     <input
                       type="url"
                       name="repoLink"
@@ -491,18 +487,17 @@ export function ProjectForm() {
                       onChange={handleChange}
                       onBlur={() => handleBlur('repoLink')}
                       placeholder="https://github.com/..."
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black ${
-                        errors.repoLink ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring ${errors.repoLink ? 'border-destructive' : 'border-input'
+                        }`}
                     />
                     {errors.repoLink && touched.repoLink && (
-                      <p className="text-sm text-red-500 mt-1">{errors.repoLink}</p>
+                      <p className="text-sm text-destructive mt-1">{errors.repoLink}</p>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Live Link</label>
+                  <label className="block text-sm font-medium mb-1 text-foreground">Live Link</label>
                   <input
                     type="url"
                     name="liveLink"
@@ -510,12 +505,11 @@ export function ProjectForm() {
                     onChange={handleChange}
                     onBlur={() => handleBlur('liveLink')}
                     placeholder="https://..."
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black ${
-                      errors.liveLink ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring ${errors.liveLink ? 'border-destructive' : 'border-input'
+                      }`}
                   />
                   {errors.liveLink && touched.liveLink && (
-                    <p className="text-sm text-red-500 mt-1">{errors.liveLink}</p>
+                    <p className="text-sm text-destructive mt-1">{errors.liveLink}</p>
                   )}
                 </div>
 

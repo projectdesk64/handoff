@@ -38,7 +38,7 @@ export function ProjectList() {
       <Layout title="Projects">
         <div className="flex flex-col gap-4 max-w-5xl mx-auto">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="border-slate-100">
+            <Card key={i} className="border-border">
               <CardContent className="p-6">
                 <div className="flex flex-col gap-4">
                   <div className="flex justify-between items-start gap-4">
@@ -73,7 +73,7 @@ export function ProjectList() {
   if (error) {
     return (
       <Layout>
-        <div className="text-red-500">Error: {error}</div>
+        <div className="text-destructive">Error: {error}</div>
       </Layout>
     );
   }
@@ -112,7 +112,7 @@ export function ProjectList() {
             return (
               <Card
                 key={project.id}
-                className={`cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-slate-100 ${overdue ? 'border-l-4 border-l-red-500' : ''}`}
+                className={`cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border ${overdue ? 'border-l-4 border-l-destructive' : ''}`}
                 onClick={() => navigate(`/projects/${project.id}`)}
               >
                 <CardContent className="p-6">
@@ -121,7 +121,7 @@ export function ProjectList() {
                     <div className="flex justify-between items-start gap-4">
                       {/* Left: Project & Client */}
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-lg font-semibold text-slate-900 leading-none tracking-tight mb-1 truncate">
+                        <h3 className="text-lg font-semibold text-foreground leading-none tracking-tight mb-1 truncate">
                           {project.name}
                         </h3>
                         <p className="text-sm text-muted-foreground truncate">
@@ -132,8 +132,8 @@ export function ProjectList() {
                       {/* Right: Status */}
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
                         <div className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${overdue
-                          ? 'bg-red-50 text-red-700 border-red-100'
-                          : 'bg-slate-50 text-slate-600 border-slate-100'
+                          ? 'bg-destructive/10 text-destructive border-destructive/20'
+                          : 'bg-muted text-secondary-foreground border-border'
                           }`}>
                           {status}
                           {overdue && <span className="font-semibold ml-1">(Overdue)</span>}
@@ -146,10 +146,10 @@ export function ProjectList() {
                       <div className="flex gap-8 sm:gap-12">
                         {/* Due Amount - Emphasized */}
                         <div>
-                          <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">
+                          <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-1">
                             Due Amount
                           </p>
-                          <p className={`text-lg font-semibold ${dueAmount > 0 ? 'text-amber-600' : 'text-emerald-600'
+                          <p className={`text-lg font-semibold ${dueAmount > 0 ? 'text-warning' : 'text-success'
                             }`}>
                             {dueAmount === 0 ? 'Settled' : formatINR(dueAmount)}
                           </p>
@@ -157,10 +157,10 @@ export function ProjectList() {
 
                         {/* Deadline */}
                         <div>
-                          <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">
+                          <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-1">
                             Deadline
                           </p>
-                          <p className={`text-sm font-medium ${overdue ? 'text-red-600' : 'text-slate-700'}`}>
+                          <p className={`text-sm font-medium ${overdue ? 'text-destructive' : 'text-foreground'}`}>
                             {formatDate(project.deadline)}
                           </p>
                         </div>
@@ -168,10 +168,10 @@ export function ProjectList() {
                         {/* Lifecycle Date */}
                         {lifecycleDate && (
                           <div className="hidden sm:block">
-                            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1 invisible">
+                            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-1 invisible">
                               State
                             </p>
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-muted-foreground">
                               {lifecycleDate}
                             </p>
                           </div>
@@ -182,7 +182,7 @@ export function ProjectList() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-muted-foreground hover:text-destructive hover:bg-red-50 h-8 px-3"
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 px-3"
                         onClick={(e) => handleDeleteClick(e, project.id, project.name)}
                       >
                         Delete

@@ -49,7 +49,7 @@ export function ProjectDetail() {
   if ((globalLoading || isInitializing) && !project) {
     return (
       <Layout>
-        <div className="text-gray-500">Loading project...</div>
+        <div className="text-muted-foreground">Loading project...</div>
       </Layout>
     );
   }
@@ -59,7 +59,7 @@ export function ProjectDetail() {
     return (
       <Layout>
         <div className="p-8">
-          <div className="text-red-500 mb-4">Error: {error || 'Project not found'}</div>
+          <div className="text-destructive mb-4">Error: {error || 'Project not found'}</div>
           <Button onClick={() => navigate('/')}>Back to Projects</Button>
         </div>
       </Layout>
@@ -179,14 +179,14 @@ export function ProjectDetail() {
             <div className="flex flex-wrap items-center gap-3">
               {/* Status Badge */}
               <div className={`px-3 py-1 rounded-full text-sm font-medium border inline-flex items-center ${overdue
-                ? 'bg-red-50 text-red-700 border-red-200'
-                : 'bg-slate-100 text-slate-700 border-slate-200'
+                ? 'bg-destructive/10 text-destructive border-destructive/20'
+                : 'bg-muted text-muted-foreground border-border'
                 }`}>
                 {status}
               </div>
               {/* Overdue Indicator */}
               {overdue && (
-                <span className="text-red-700 font-medium text-xs bg-red-50 px-2 py-0.5 rounded border border-red-100">
+                <span className="text-destructive font-medium text-xs bg-destructive/10 px-2 py-0.5 rounded border border-destructive/20">
                   Overdue
                 </span>
               )}
@@ -196,7 +196,7 @@ export function ProjectDetail() {
               {status === 'Ready to Deliver' && (
                 <Button
                   size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white ml-2"
+                  className="bg-success hover:bg-success/90 text-primary-foreground ml-2"
                   onClick={() => handleStatusUpdate('delivered')}
                   disabled={statusUpdating || dueAmount > 0}
                 >
@@ -208,13 +208,13 @@ export function ProjectDetail() {
 
             {/* Status Guidance */}
             {status === 'Completed (Payment Pending)' && (
-              <p className="text-sm text-amber-600 font-medium flex items-center gap-2">
+              <p className="text-sm text-warning font-medium flex items-center gap-2">
                 Delivery is paused until payment is settled.
               </p>
             )}
 
             {status === 'Ready to Deliver' && (
-              <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
+              <p className="text-sm text-success font-medium flex items-center gap-2">
                 Payment settled. Ready for delivery.
               </p>
             )}
@@ -222,19 +222,19 @@ export function ProjectDetail() {
 
           <div className="flex flex-col sm:flex-row sm:items-end gap-6 sm:gap-16">
             <div>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">
                 Amount Due
               </p>
-              <p className={`text-4xl sm:text-5xl font-semibold tracking-tight ${dueAmount > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+              <p className={`text-4xl sm:text-5xl font-semibold tracking-tight ${dueAmount > 0 ? 'text-warning' : 'text-success'}`}>
                 {dueAmount === 0 ? 'Settled' : formatINR(dueAmount)}
               </p>
             </div>
 
             <div className="pb-1">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">
                 Deadline
               </p>
-              <p className="text-xl font-medium text-slate-700">
+              <p className="text-xl font-medium text-foreground">
                 {formatDate(project.deadline)}
               </p>            </div>
           </div>
@@ -244,9 +244,9 @@ export function ProjectDetail() {
 
         {/* SECTION 2 — PAYMENT DETAILS */}
         <section>
-          <Card className="rounded-xl overflow-hidden border-slate-200 shadow-sm">
+          <Card className="rounded-xl overflow-hidden border-border shadow-sm">
             <CardHeader className="pb-2 pt-6 px-6">
-              <CardTitle className="text-base font-semibold text-slate-800">Payment Details</CardTitle>
+              <CardTitle className="text-base font-semibold text-foreground">Payment Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-6 text-sm">
               <div className="flex justify-between items-center">
@@ -255,7 +255,7 @@ export function ProjectDetail() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Advance Received</span>
-                <span className="font-medium text-slate-600">{formatINR(project.advanceReceived)}</span>
+                <span className="font-medium text-muted-foreground">{formatINR(project.advanceReceived)}</span>
               </div>
 
               <div className="py-2">
@@ -265,17 +265,17 @@ export function ProjectDetail() {
                 </div>
 
                 {isAddingPayment ? (
-                  <div className="bg-slate-50 p-3 rounded-md border border-slate-200 mt-2 space-y-3 animate-in fade-in zoom-in-95 duration-200">
-                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Record New Payment</label>
+                  <div className="bg-muted/50 p-3 rounded-md border border-border mt-2 space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Record New Payment</label>
                     <div className="flex gap-2">
                       <div className="relative flex-1">
-                        <span className="absolute left-3 top-2 text-slate-400">₹</span>
+                        <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                         <input
                           type="number"
                           autoFocus
                           placeholder="Amount"
                           step="1"
-                          className="w-full pl-7 pr-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                          className="w-full pl-7 pr-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                           value={paymentAmount}
                           onChange={(e) => setPaymentAmount(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && handlePaymentSubmit()}
@@ -285,16 +285,16 @@ export function ProjectDetail() {
                       <Button size="sm" variant="ghost" onClick={() => { setIsAddingPayment(false); setPaymentAmount(''); }}>Cancel</Button>
                     </div>
                     {Number(paymentAmount) > dueAmount && (
-                      <p className="text-xs text-amber-600 font-medium">
+                      <p className="text-xs text-warning font-medium">
                         Note: Payment exceeds due amount
                       </p>
                     )}
-                    {paymentError && <p className="text-xs text-red-500">{paymentError}</p>}
+                    {paymentError && <p className="text-xs text-destructive">{paymentError}</p>}
                   </div>
                 ) : (
                   <button
                     onClick={() => setIsAddingPayment(true)}
-                    className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium flex items-center gap-1 mt-1"
+                    className="text-sm text-primary hover:text-primary/90 hover:underline font-medium flex items-center gap-1 mt-1"
                   >
                     + Record Payment
                   </button>
@@ -303,7 +303,7 @@ export function ProjectDetail() {
               <div className="my-2 h-px bg-border" />
               <div className="flex justify-between items-center text-base">
                 <span className="font-semibold">Due Amount</span>
-                <span className={`font-semibold ${dueAmount > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+                <span className={`font-semibold ${dueAmount > 0 ? 'text-warning' : 'text-success'}`}>
                   {formatINR(dueAmount)}
                 </span>
               </div>
@@ -317,31 +317,31 @@ export function ProjectDetail() {
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+              <h3 className="text-lg font-semibold tracking-tight text-foreground">
                 Project Links
               </h3>
-              <p className="text-sm text-slate-500 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Stored for future reference
               </p>
             </div>
             {status === 'Delivered' && (
-              <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full uppercase tracking-wide font-bold">
+              <span className="text-xs bg-success/10 text-success px-2.5 py-1 rounded-full uppercase tracking-wide font-bold">
                 Delivered
               </span>
             )}
           </div>
 
-          <div className="divide-y divide-slate-100 border-t border-b border-slate-100">
+          <div className="divide-y divide-border border-t border-b border-border">
             {/* Repo Link */}
             <div className="py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-slate-900 mb-1">Source Code Repository</p>
+                <p className="text-sm font-medium text-foreground mb-1">Source Code Repository</p>
                 {editingLink === 'repo' ? (
                   <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
                     <input
                       type="url"
                       placeholder="https://github.com/..."
-                      className="flex-1 text-sm border-slate-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                      className="flex-1 text-sm border-input rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-ring"
                       value={tempLinkValue}
                       onChange={(e) => setTempLinkValue(e.target.value)}
                       autoFocus
@@ -353,11 +353,11 @@ export function ProjectDetail() {
                   </div>
                 ) : (
                   project.repoLink ? (
-                    <a href={project.repoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate block">
+                    <a href={project.repoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
                       {project.repoLink}
                     </a>
                   ) : (
-                    <span className="text-sm text-slate-400">Not added</span>
+                    <span className="text-sm text-muted-foreground">Not added</span>
                   )
                 )}
               </div>
@@ -366,7 +366,7 @@ export function ProjectDetail() {
                   variant="ghost"
                   size="sm"
                   onClick={() => startEditing('repo', project.repoLink)}
-                  className={project.repoLink ? "text-slate-500 hover:text-slate-900" : "text-blue-600 hover:text-blue-700 hover:bg-blue-50"}
+                  className={project.repoLink ? "text-muted-foreground hover:text-foreground" : "text-primary hover:text-primary/90 hover:bg-primary/10"}
                 >
                   {project.repoLink ? 'Edit' : 'Add Link'}
                 </Button>
@@ -376,7 +376,7 @@ export function ProjectDetail() {
             {/* Live Link */}
             <div className="py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-slate-900 mb-1">Live Website</p>
+                <p className="text-sm font-medium text-foreground mb-1">Live Website</p>
                 {editingLink === 'live' ? (
                   <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
                     <input
@@ -394,11 +394,11 @@ export function ProjectDetail() {
                   </div>
                 ) : (
                   project.liveLink ? (
-                    <a href={project.liveLink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate block">
+                    <a href={project.liveLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
                       {project.liveLink}
                     </a>
                   ) : (
-                    <span className="text-sm text-slate-400">Not added</span>
+                    <span className="text-sm text-muted-foreground">Not added</span>
                   )
                 )}
               </div>
@@ -407,7 +407,7 @@ export function ProjectDetail() {
                   variant="ghost"
                   size="sm"
                   onClick={() => startEditing('live', project.liveLink)}
-                  className={project.liveLink ? "text-slate-500 hover:text-slate-900" : "text-blue-600 hover:text-blue-700 hover:bg-blue-50"}
+                  className={project.liveLink ? "text-muted-foreground hover:text-foreground" : "text-primary hover:text-primary/90 hover:bg-primary/10"}
                 >
                   {project.liveLink ? 'Edit' : 'Add Link'}
                 </Button>
@@ -417,7 +417,7 @@ export function ProjectDetail() {
             {/* Video Link */}
             <div className="py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-slate-900 mb-1">Completion Video</p>
+                <p className="text-sm font-medium text-foreground mb-1">Completion Video</p>
                 {editingLink === 'video' ? (
                   <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
                     <input
@@ -435,11 +435,11 @@ export function ProjectDetail() {
                   </div>
                 ) : (
                   project.completionVideoLink ? (
-                    <a href={project.completionVideoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate block">
+                    <a href={project.completionVideoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
                       {project.completionVideoLink}
                     </a>
                   ) : (
-                    <span className="text-sm text-slate-400">Not added</span>
+                    <span className="text-sm text-muted-foreground">Not added</span>
                   )
                 )}
               </div>
@@ -448,7 +448,7 @@ export function ProjectDetail() {
                   variant="ghost"
                   size="sm"
                   onClick={() => startEditing('video', project.completionVideoLink)}
-                  className={project.completionVideoLink ? "text-slate-500 hover:text-slate-900" : "text-blue-600 hover:text-blue-700 hover:bg-blue-50"}
+                  className={project.completionVideoLink ? "text-muted-foreground hover:text-foreground" : "text-primary hover:text-primary/90 hover:bg-primary/10"}
                 >
                   {project.completionVideoLink ? 'Edit' : 'Add Link'}
                 </Button>
@@ -458,7 +458,7 @@ export function ProjectDetail() {
 
           {/* Delivered Footer Message */}
           {status === 'Delivered' && (
-            <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 p-4 rounded-lg text-sm text-center font-medium">
+            <div className="bg-success/10 text-success border border-success/20 p-4 rounded-lg text-sm text-center font-medium">
               Project delivered on {formatDate(project.deliveredAt || '')}
             </div>
           )}
@@ -495,28 +495,28 @@ export function ProjectDetail() {
         <Separator />
 
         {/* SECTION 5 — PARTNER SHARE (RECORD ONLY) */}
-        <section className="bg-gray-50 p-4 rounded-lg border border-dashed border-gray-200 mt-8">
+        <section className="bg-muted/50 p-4 rounded-lg border border-dashed border-border mt-8">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold tracking-widest text-gray-500 uppercase">
+            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
               Partner Share Record
             </h3>
-            <span className="text-[10px] text-gray-400 font-medium px-2 py-0.5 bg-gray-100 rounded">INTERNAL</span>
+            <span className="text-[10px] text-muted-foreground font-medium px-2 py-0.5 bg-muted rounded">INTERNAL</span>
           </div>
 
           <div className="space-y-4">
             {/* HARSHK */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm border-b border-gray-100 pb-2">
-              <span className="font-semibold text-gray-800 w-24">Harshk</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm border-b border-border pb-2">
+              <span className="font-semibold text-foreground w-24">Harshk</span>
               <div className="flex gap-4 sm:gap-12 flex-1">
                 <div>
-                  <span className="block text-gray-400 text-xs mb-0.5">Share Given</span>
-                  <span className="font-semibold text-gray-700">
+                  <span className="block text-muted-foreground text-xs mb-0.5">Share Given</span>
+                  <span className="font-semibold text-foreground">
                     {project.harshkShareGiven ? formatINR(project.harshkShareGiven) : '—'}
                   </span>
                 </div>
                 <div>
-                  <span className="block text-gray-400 text-xs mb-0.5">Date Processed</span>
-                  <span className="font-medium text-gray-700">
+                  <span className="block text-muted-foreground text-xs mb-0.5">Date Processed</span>
+                  <span className="font-medium text-foreground">
                     {project.harshkShareDate ? formatDate(project.harshkShareDate) : '—'}
                   </span>
                 </div>
@@ -525,17 +525,17 @@ export function ProjectDetail() {
 
             {/* NIKKU */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm">
-              <span className="font-semibold text-gray-800 w-24">Nikku</span>
+              <span className="font-semibold text-foreground w-24">Nikku</span>
               <div className="flex gap-4 sm:gap-12 flex-1">
                 <div>
-                  <span className="block text-gray-400 text-xs mb-0.5">Share Given</span>
-                  <span className="font-semibold text-gray-700">
+                  <span className="block text-muted-foreground text-xs mb-0.5">Share Given</span>
+                  <span className="font-semibold text-foreground">
                     {project.nikkuShareGiven ? formatINR(project.nikkuShareGiven) : '—'}
                   </span>
                 </div>
                 <div>
-                  <span className="block text-gray-400 text-xs mb-0.5">Date Processed</span>
-                  <span className="font-medium text-gray-700">
+                  <span className="block text-muted-foreground text-xs mb-0.5">Date Processed</span>
+                  <span className="font-medium text-foreground">
                     {project.nikkuShareDate ? formatDate(project.nikkuShareDate) : '—'}
                   </span>
                 </div>
@@ -543,7 +543,7 @@ export function ProjectDetail() {
             </div>
           </div>
 
-          <p className="text-[11px] text-gray-400 mt-4">
+          <p className="text-[11px] text-muted-foreground mt-4">
             * This share is independent of client payments and is recorded here for administrative purposes only.
           </p>
         </section>
