@@ -17,7 +17,14 @@ export function Layout({ children, title, actions }: LayoutProps) {
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Link to="/" className="flex items-center gap-2">
-                            <img src={Logo} alt="HandOff" className="h-12 w-auto" />
+                            <img
+                                src={Logo}
+                                alt="HandOff"
+                                className="h-12 w-auto"
+                                width="48"
+                                height="48"
+                                fetchPriority="high"
+                            />
                         </Link>
                     </div>
                 </div>
