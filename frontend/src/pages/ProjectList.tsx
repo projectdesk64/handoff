@@ -6,13 +6,15 @@ import { formatDate } from '../utils/date';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { AlertDialog } from '../components/ui/alert-dialog';
-import { Skeleton } from '../components/ui/skeleton';
+import { motion, useReducedMotion } from 'framer-motion';
+import { SkeletonProjectCard } from '../components/SkeletonProjectCard';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 
 export function ProjectList() {
   const { projects, loading, error, deleteProject } = useProjects();
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
 
@@ -38,32 +40,7 @@ export function ProjectList() {
       <Layout title="Projects">
         <div className="flex flex-col gap-4 max-w-5xl mx-auto">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="border-border">
-              <CardContent className="p-6">
-                <div className="flex flex-col gap-4">
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="min-w-0 flex-1">
-                      <Skeleton className="h-6 w-48 mb-2" />
-                      <Skeleton className="h-4 w-32" />
-                    </div>
-                    <Skeleton className="h-6 w-24 rounded-full" />
-                  </div>
-                  <div className="flex items-end justify-between border-t pt-4">
-                    <div className="flex gap-8 sm:gap-12">
-                      <div>
-                        <Skeleton className="h-3 w-20 mb-1" />
-                        <Skeleton className="h-5 w-24" />
-                      </div>
-                      <div>
-                        <Skeleton className="h-3 w-16 mb-1" />
-                        <Skeleton className="h-4 w-20" />
-                      </div>
-                    </div>
-                    <Skeleton className="h-8 w-16" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <SkeletonProjectCard key={i} />
           ))}
         </div>
       </Layout>
@@ -90,12 +67,17 @@ export function ProjectList() {
       }
     >
       {projects.length === 0 ? (
-        <div className="text-center py-12">
+        <motion.div
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: "easeOut" }}
+          className="text-center py-12"
+        >
           <p className="text-muted-foreground mb-4">No projects yet.</p>
           <Button onClick={() => navigate('/projects/new')}>
             Create Your First Project
           </Button>
-        </div>
+        </motion.div>
       ) : (
         <div className="flex flex-col gap-4 max-w-5xl mx-auto">
           {projects.map((project) => {

@@ -5,6 +5,7 @@ import { useProjects } from '../context/ProjectContext';
 import { ExpandCollapse } from '../components/ExpandCollapse';
 import { FeedbackMessage } from '../components/FeedbackMessage';
 import { Project } from '../models/Project';
+import { SkeletonProjectDetail } from '../components/SkeletonProjectDetail';
 import { getProjectStatus, getDueAmount, isOverdue, getMissingCompletionRequirements, getMissingDeliveryRequirements } from '../utils/status';
 import { formatINR } from '../utils/currency';
 import { formatDate } from '../utils/date';
@@ -52,11 +53,7 @@ export function ProjectDetail() {
 
   // Show loading only if we have no project data and are fetching/initializing
   if ((globalLoading || isInitializing) && !project) {
-    return (
-      <Layout>
-        <div className="text-muted-foreground">Loading project...</div>
-      </Layout>
-    );
+    return <SkeletonProjectDetail />;
   }
 
   // Show error only if we aren't loading and still have no project
@@ -171,6 +168,14 @@ export function ProjectDetail() {
   // Standard separator style since component is not available
   const Separator = () => <div className="h-[1px] w-full bg-border my-8" />;
 
+  const LoadingSpinner = () => (
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+      className="mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full"
+    />
+  );
+
   return (
     <Layout
       title={project.name}
@@ -190,7 +195,14 @@ export function ProjectDetail() {
                 onClick={() => handleStatusUpdate('delivered')}
                 disabled={statusUpdating || dueAmount > 0 || missingDeliveryDetails.length > 0}
               >
-                {statusUpdating ? 'Updating...' : 'Mark as Delivered'}
+                {statusUpdating ? (
+                  <>
+                    <LoadingSpinner />
+                    Updating...
+                  </>
+                ) : (
+                  'Mark as Delivered'
+                )}
               </Button>
               <AnimatePresence>
                 {missingDeliveryDetails.length > 0 && (
@@ -213,7 +225,14 @@ export function ProjectDetail() {
                 onClick={() => handleStatusUpdate('completed')}
                 disabled={statusUpdating || missingCompletionDetails.length > 0}
               >
-                {statusUpdating ? 'Updating...' : 'Mark as Completed'}
+                {statusUpdating ? (
+                  <>
+                    <LoadingSpinner />
+                    Updating...
+                  </>
+                ) : (
+                  'Mark as Completed'
+                )}
               </Button>
               <AnimatePresence>
                 {missingCompletionDetails.length > 0 && (
@@ -339,7 +358,9 @@ export function ProjectDetail() {
                               onKeyDown={(e) => e.key === 'Enter' && handlePaymentSubmit()}
                             />
                           </div>
-                          <Button size="sm" onClick={handlePaymentSubmit} disabled={!paymentAmount || Number(paymentAmount) <= 0}>Save</Button>
+                          <Button size="sm" onClick={handlePaymentSubmit} disabled={!paymentAmount || Number(paymentAmount) <= 0}>
+                            {isAddingPayment && !paymentAmount ? 'Save' : 'Save'}
+                          </Button>
                           <Button size="sm" variant="ghost" onClick={() => { setIsAddingPayment(false); setPaymentAmount(''); }}>Cancel</Button>
                         </div>
                         {Number(paymentAmount) > dueAmount && (
