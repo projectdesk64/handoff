@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useProjects } from '../context/ProjectContext';
 import { ExpandCollapse } from '../components/ExpandCollapse';
-import { useToast } from '../context/ToastContext';
+import { FeedbackMessage } from '../components/FeedbackMessage';
 import { Project } from '../models/Project';
 import { getProjectStatus, getDueAmount, isOverdue, getMissingCompletionRequirements, getMissingDeliveryRequirements } from '../utils/status';
 import { formatINR } from '../utils/currency';
@@ -17,7 +17,6 @@ export function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { projects, fetchProject, updateProject, loading: globalLoading, error } = useProjects();
-  const toast = useToast();
 
   // Initialize project from cache if available to prevent flicker
   const [project, setProject] = useState<Project | null>(() =>
@@ -31,13 +30,17 @@ export function ProjectDetail() {
   const [isAddingPayment, setIsAddingPayment] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
 
   // Status UX State
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [statusSuccess, setStatusSuccess] = useState<string | null>(null);
 
   // Handover UX State
   const [editingLink, setEditingLink] = useState<'repo' | 'live' | 'video' | null>(null);
   const [tempLinkValue, setTempLinkValue] = useState('');
+  const [linkSuccess, setLinkSuccess] = useState<{ id: string, message: string } | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -93,7 +96,8 @@ export function ProjectDetail() {
       // Update project and use returned updated project
       const updatedProject = await updateProject(id, updates);
       setProject(updatedProject);
-      toast.success('Status updated', 'Project has been marked as delivered');
+      setStatusSuccess('Project status updated');
+      setTimeout(() => setStatusSuccess(null), 3000);
     } catch (err) {
       // Error is handled by toast in context
     } finally {
@@ -120,7 +124,8 @@ export function ProjectDetail() {
       setIsAddingPayment(false);
       setPaymentAmount('');
       setPaymentError(null);
-      toast.success('Payment recorded', `Payment of ${formatINR(amountToAdd)} has been recorded`);
+      setPaymentSuccess(`Payment recorded: ${formatINR(amountToAdd)}`);
+      setTimeout(() => setPaymentSuccess(null), 3000);
 
     } catch (err) {
       setPaymentError('Failed to save payment. Please try again.');
@@ -133,9 +138,10 @@ export function ProjectDetail() {
 
     // Validation
     if (tempLinkValue && tempLinkValue.trim() !== '' && !validateURL(tempLinkValue)) {
-      toast.error('Invalid URL', 'Please enter a valid URL starting with http:// or https://');
+      setLinkError('Please enter a valid URL starting with http:// or https://');
       return;
     }
+    setLinkError(null);
 
     try {
       // Update project and use returned updated project
@@ -145,11 +151,12 @@ export function ProjectDetail() {
       setEditingLink(null);
       setTempLinkValue('');
       const fieldNames: Record<typeof field, string> = {
-        repoLink: 'Repository link',
-        liveLink: 'Live link',
-        completionVideoLink: 'Completion video link',
+        repoLink: 'Repository',
+        liveLink: 'Live site',
+        completionVideoLink: 'Video',
       };
-      toast.success('Link updated', `${fieldNames[field]} has been ${tempLinkValue ? 'updated' : 'removed'}`);
+      setLinkSuccess({ id: field, message: `${fieldNames[field]} updated` });
+      setTimeout(() => setLinkSuccess(null), 3000);
     } catch (err) {
       // Error is handled by toast in context
     }
@@ -177,7 +184,7 @@ export function ProjectDetail() {
           </Button>
 
           {status === 'Ready to Deliver' && (
-            <div title={missingDeliveryDetails.length > 0 ? `To continue, please add: ${missingDeliveryDetails.join(', ')}` : undefined}>
+            <div className="flex flex-col items-end gap-1">
               <Button
                 className="bg-success hover:bg-success/90 text-primary-foreground"
                 onClick={() => handleStatusUpdate('delivered')}
@@ -185,17 +192,36 @@ export function ProjectDetail() {
               >
                 {statusUpdating ? 'Updating...' : 'Mark as Delivered'}
               </Button>
+              <AnimatePresence>
+                {missingDeliveryDetails.length > 0 && (
+                  <FeedbackMessage type="info" className="text-[10px] text-right">
+                    Missing: {missingDeliveryDetails.join(', ')}
+                  </FeedbackMessage>
+                )}
+                {dueAmount > 0 && (
+                  <FeedbackMessage type="warning" className="text-[10px] text-right">
+                    Payment pending
+                  </FeedbackMessage>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
           {status === 'In Progress' && (
-            <div title={missingCompletionDetails.length > 0 ? `To continue, please add: ${missingCompletionDetails.join(', ')}` : undefined}>
+            <div className="flex flex-col items-end gap-1">
               <Button
                 onClick={() => handleStatusUpdate('completed')}
                 disabled={statusUpdating || missingCompletionDetails.length > 0}
               >
                 {statusUpdating ? 'Updating...' : 'Mark as Completed'}
               </Button>
+              <AnimatePresence>
+                {missingCompletionDetails.length > 0 && (
+                  <FeedbackMessage type="info" className="text-[10px] text-right">
+                    Missing: {missingCompletionDetails.join(', ')}
+                  </FeedbackMessage>
+                )}
+              </AnimatePresence>
             </div>
           )}
         </div>
@@ -219,6 +245,11 @@ export function ProjectDetail() {
                 <span className="text-destructive font-medium text-xs bg-destructive/10 px-2 py-0.5 rounded border border-destructive/20">
                   Overdue
                 </span>
+              )}
+              {statusSuccess && (
+                <FeedbackMessage type="success" className="ml-2">
+                  {statusSuccess}
+                </FeedbackMessage>
               )}
 
 
@@ -312,28 +343,37 @@ export function ProjectDetail() {
                           <Button size="sm" variant="ghost" onClick={() => { setIsAddingPayment(false); setPaymentAmount(''); }}>Cancel</Button>
                         </div>
                         {Number(paymentAmount) > dueAmount && (
-                          <p className="text-xs text-warning font-medium">
+                          <FeedbackMessage type="warning">
                             Note: Payment exceeds due amount
-                          </p>
+                          </FeedbackMessage>
                         )}
-                        {paymentError && <p className="text-xs text-destructive">{paymentError}</p>}
+                        {paymentError && <FeedbackMessage type="error">{paymentError}</FeedbackMessage>}
                       </div>
                     </ExpandCollapse>
                   ) : (
-                    <motion.div
-                      key="payment-button"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <button
-                        onClick={() => setIsAddingPayment(true)}
-                        className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1 mt-2 px-2 py-1 -ml-2 rounded-md hover:bg-primary/5 transition-colors"
+                    <div className="flex items-center gap-3 mt-1">
+                      <motion.div
+                        key="payment-button"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
                       >
-                        + Record Payment
-                      </button>
-                    </motion.div>
+                        <button
+                          onClick={() => setIsAddingPayment(true)}
+                          className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1 mt-2 px-2 py-1 -ml-2 rounded-md hover:bg-primary/5 transition-colors"
+                        >
+                          + Record Payment
+                        </button>
+                      </motion.div>
+                      <AnimatePresence>
+                        {paymentSuccess && (
+                          <FeedbackMessage type="success" className="translate-y-1">
+                            {paymentSuccess}
+                          </FeedbackMessage>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   )}
                 </AnimatePresence>
               </div>
@@ -387,9 +427,10 @@ export function ProjectDetail() {
                         />
                         <div className="flex gap-2">
                           <Button size="sm" onClick={() => handleLinkUpdate('repoLink')}>Save</Button>
-                          <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setEditingLink(null); setLinkError(null); }}>Cancel</Button>
                         </div>
                       </div>
+                      {linkError && <FeedbackMessage type="error">{linkError}</FeedbackMessage>}
                     </ExpandCollapse>
                   ) : (
                     <motion.div
@@ -398,6 +439,7 @@ export function ProjectDetail() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
+                      className="flex items-center gap-3"
                     >
                       {project.repoLink ? (
                         <a href={project.repoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
@@ -406,6 +448,13 @@ export function ProjectDetail() {
                       ) : (
                         <span className="text-sm text-muted-foreground">Not added</span>
                       )}
+                      <AnimatePresence>
+                        {linkSuccess?.id === 'repoLink' && (
+                          <FeedbackMessage type="success">
+                            {linkSuccess.message}
+                          </FeedbackMessage>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -440,9 +489,10 @@ export function ProjectDetail() {
                         />
                         <div className="flex gap-2">
                           <Button size="sm" onClick={() => handleLinkUpdate('liveLink')}>Save</Button>
-                          <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setEditingLink(null); setLinkError(null); }}>Cancel</Button>
                         </div>
                       </div>
+                      {linkError && <FeedbackMessage type="error">{linkError}</FeedbackMessage>}
                     </ExpandCollapse>
                   ) : (
                     <motion.div
@@ -451,6 +501,7 @@ export function ProjectDetail() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
+                      className="flex items-center gap-3"
                     >
                       {project.liveLink ? (
                         <a href={project.liveLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
@@ -459,6 +510,13 @@ export function ProjectDetail() {
                       ) : (
                         <span className="text-sm text-muted-foreground">Not added</span>
                       )}
+                      <AnimatePresence>
+                        {linkSuccess?.id === 'liveLink' && (
+                          <FeedbackMessage type="success">
+                            {linkSuccess.message}
+                          </FeedbackMessage>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -493,9 +551,10 @@ export function ProjectDetail() {
                         />
                         <div className="flex gap-2">
                           <Button size="sm" onClick={() => handleLinkUpdate('completionVideoLink')}>Save</Button>
-                          <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setEditingLink(null); setLinkError(null); }}>Cancel</Button>
                         </div>
                       </div>
+                      {linkError && <FeedbackMessage type="error">{linkError}</FeedbackMessage>}
                     </ExpandCollapse>
                   ) : (
                     <motion.div
@@ -504,6 +563,7 @@ export function ProjectDetail() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
+                      className="flex items-center gap-3"
                     >
                       {project.completionVideoLink ? (
                         <a href={project.completionVideoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
@@ -512,6 +572,13 @@ export function ProjectDetail() {
                       ) : (
                         <span className="text-sm text-muted-foreground">Not added</span>
                       )}
+                      <AnimatePresence>
+                        {linkSuccess?.id === 'completionVideoLink' && (
+                          <FeedbackMessage type="success">
+                            {linkSuccess.message}
+                          </FeedbackMessage>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   )}
                 </AnimatePresence>
