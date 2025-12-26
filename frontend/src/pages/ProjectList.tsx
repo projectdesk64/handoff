@@ -11,6 +11,7 @@ import { SkeletonProjectCard } from '../components/SkeletonProjectCard';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Layout } from '../components/Layout';
+import { cn } from '../utils/cn';
 
 const variants: Variants = {
   enter: (direction: number) => ({
@@ -142,7 +143,7 @@ export function ProjectList() {
       ) : (
         <>
           {/* List Container with Slide Transition */}
-          <div className="grid grid-cols-1 relative overflow-hidden min-h-[500px]">
+          <div className="grid grid-cols-1 relative overflow-hidden min-h-[500px] p-4">
             <AnimatePresence initial={false} mode="popLayout" custom={direction}>
               <motion.div
                 key={page}
@@ -165,87 +166,108 @@ export function ProjectList() {
                       : null;
 
                   return (
-                    <Card
+                    <motion.div
                       key={project.id}
-                      className={`cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border-border ${overdue ? 'border-l-4 border-l-destructive' : ''}`}
+                      initial={{ scale: 1 }}
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ duration: 0.2 }}
                       onClick={() => navigate(`/projects/${project.id}`)}
+                      className={cn(
+                        "relative group rounded-xl p-[2px] cursor-pointer overflow-hidden",
+                        "bg-transparent transition-colors duration-300"
+                      )}
                     >
-                      <CardContent className="p-6">
-                        <div className="flex flex-col gap-4">
-                          {/* Top Row: Primary Info & Status */}
-                          <div className="flex justify-between items-start gap-4">
-                            {/* Left: Project & Client */}
-                            <div className="min-w-0 flex-1">
-                              <h2 className="text-lg font-semibold text-foreground leading-none tracking-tight mb-1 truncate">
-                                {project.name}
-                              </h2>
-                              <p className="text-sm text-muted-foreground truncate">
-                                {project.clientName || 'No client'}
-                              </p>
-                            </div>
+                      {/* Gradient Background Layer */}
+                      <div
+                        className={cn(
+                          "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+                          overdue
+                            ? "bg-gradient-to-r from-red-500 via-orange-500 to-red-500"
+                            : "bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600"
+                        )}
+                      />
 
-                            {/* Right: Status */}
-                            <div className="flex flex-col items-end gap-1.5 shrink-0">
-                              <div className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${overdue
-                                ? 'bg-destructive/10 text-destructive border-destructive/20'
-                                : 'bg-secondary text-secondary-foreground border-border'
-                                }`}>
-                                {status}
+                      {/* Passive Border Layer */}
+                      <div className={cn("absolute inset-0 bg-border opacity-30 group-hover:opacity-0 transition-opacity duration-300")} />
 
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Bottom Row: Secondary Info & Actions */}
-                          <div className="flex items-end justify-between border-t pt-4 mt-1">
-                            <div className="flex gap-8 sm:gap-12">
-                              {/* Due Amount - Emphasized */}
-                              <div>
-                                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-1">
-                                  Due Amount
+                      <Card className="relative h-full border-0 bg-card shadow-none rounded-[10px]">
+                        <CardContent className="p-6">
+                          <div className="flex flex-col gap-4">
+                            {/* Top Row: Primary Info & Status */}
+                            <div className="flex justify-between items-start gap-4">
+                              {/* Left: Project & Client */}
+                              <div className="min-w-0 flex-1">
+                                <h2 className="text-lg font-semibold text-foreground leading-none tracking-tight mb-1 truncate">
+                                  {project.name}
+                                </h2>
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {project.clientName || 'No client'}
                                 </p>
-                                <p className={`text-lg font-semibold ${dueAmount > 0 ? 'text-warning' : 'text-success'
+                              </div>
+
+                              {/* Right: Status */}
+                              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                <div className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${overdue
+                                  ? 'bg-destructive/10 text-destructive border-destructive/20'
+                                  : 'bg-secondary text-secondary-foreground border-border'
                                   }`}>
-                                  {dueAmount === 0 ? 'Settled' : formatINR(dueAmount)}
-                                </p>
-                              </div>
+                                  {status}
 
-                              {/* Deadline */}
-                              <div>
-                                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-1">
-                                  Deadline
-                                </p>
-                                <p className={`text-sm font-medium ${overdue ? 'text-destructive' : 'text-foreground'}`}>
-                                  {formatDate(project.deadline)}
-                                </p>
+                                </div>
                               </div>
+                            </div>
 
-                              {/* Lifecycle Date */}
-                              {lifecycleDate && (
-                                <div className="hidden sm:block">
-                                  <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-1 invisible">
-                                    State
+                            {/* Bottom Row: Secondary Info & Actions */}
+                            <div className="flex items-end justify-between border-t pt-4 mt-1">
+                              <div className="flex gap-8 sm:gap-12">
+                                {/* Due Amount - Emphasized */}
+                                <div>
+                                  <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-1">
+                                    Due Amount
                                   </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {lifecycleDate}
+                                  <p className={`text-lg font-semibold ${dueAmount > 0 ? 'text-warning' : 'text-success'
+                                    }`}>
+                                    {dueAmount === 0 ? 'Settled' : formatINR(dueAmount)}
                                   </p>
                                 </div>
-                              )}
-                            </div>
 
-                            {/* Action: Secondary Delete */}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 px-3"
-                              onClick={(e) => handleDeleteClick(e, project.id, project.name)}
-                            >
-                              Delete
-                            </Button>
+                                {/* Deadline */}
+                                <div>
+                                  <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-1">
+                                    Deadline
+                                  </p>
+                                  <p className={`text-sm font-medium ${overdue ? 'text-destructive' : 'text-foreground'}`}>
+                                    {formatDate(project.deadline)}
+                                  </p>
+                                </div>
+
+                                {/* Lifecycle Date */}
+                                {lifecycleDate && (
+                                  <div className="hidden sm:block">
+                                    <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-1 invisible">
+                                      State
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {lifecycleDate}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Action: Secondary Delete */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 px-3"
+                                onClick={(e) => handleDeleteClick(e, project.id, project.name)}
+                              >
+                                Delete
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   );
                 })}
               </motion.div>
