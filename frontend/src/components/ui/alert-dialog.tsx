@@ -1,5 +1,4 @@
-import * as React from "react"
-import { cn } from "@/utils/cn"
+
 import { Button } from "./button"
 
 interface AlertDialogProps {

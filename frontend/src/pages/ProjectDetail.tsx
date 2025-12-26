@@ -199,7 +199,7 @@ export function ProjectDetail() {
         </div>
       }
     >
-      <div className="max-w-3xl pb-12">
+      <div className="max-w-3xl mx-auto pb-12">
 
         {/* SECTION 1 — PROJECT SUMMARY */}
         <section className="space-y-6">

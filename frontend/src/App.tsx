@@ -1,4 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'motion/react';
+import { PageTransition } from './components/PageTransition';
 import { ProjectProvider } from './context/ProjectContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { Toaster } from './components/ui/toaster';
@@ -11,19 +13,45 @@ function ProjectProviderWithToast({ children }: { children: React.ReactNode }) {
   return <ProjectProvider toast={toast}>{children}</ProjectProvider>;
 }
 
+function AppRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Navigate to="/projects" replace />} />
+        <Route path="/projects" element={
+          <PageTransition>
+            <ProjectList />
+          </PageTransition>
+        } />
+        <Route path="/projects/new" element={
+          <PageTransition>
+            <ProjectForm />
+          </PageTransition>
+        } />
+        <Route path="/projects/:id" element={
+          <PageTransition>
+            <ProjectDetail />
+          </PageTransition>
+        } />
+        <Route path="/projects/:id/edit" element={
+          <PageTransition>
+            <ProjectForm />
+          </PageTransition>
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 function App() {
   return (
     <ToastProvider>
       <ProjectProviderWithToast>
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Routes>
-            <Route path="/" element={<Navigate to="/projects" replace />} />
-            <Route path="/projects" element={<ProjectList />} />
-            <Route path="/projects/new" element={<ProjectForm />} />
-            <Route path="/projects/:id" element={<ProjectDetail />} />
-            <Route path="/projects/:id/edit" element={<ProjectForm />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <AppRoutes />
         </Router>
         <Toaster />
       </ProjectProviderWithToast>
