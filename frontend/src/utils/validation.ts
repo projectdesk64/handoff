@@ -59,9 +59,8 @@ export function validateProject(project: Partial<any>): ValidationResult {
   })
 
   // JSON validation for techStack and deliverables
-
-
-
+  // This is a placeholder or legacy requirement, adding to resolve missing export error
+  // if the client still requests it.
 
   return {
     isValid: errors.length === 0,
@@ -88,6 +87,15 @@ export function validateAmount(amount: number | string): boolean {
 
 export function getFieldError(errors: ValidationError[], field: string): string | undefined {
   return errors.find((e) => e.field === field)?.message
+}
+
+export function validateJSON(value: string): boolean {
+  try {
+    JSON.parse(value)
+    return true
+  } catch {
+    return false
+  }
 }
 
 
