@@ -176,9 +176,9 @@ export function ProjectList() {
                           <div className="flex justify-between items-start gap-4">
                             {/* Left: Project & Client */}
                             <div className="min-w-0 flex-1">
-                              <h3 className="text-lg font-semibold text-foreground leading-none tracking-tight mb-1 truncate">
+                              <h2 className="text-lg font-semibold text-foreground leading-none tracking-tight mb-1 truncate">
                                 {project.name}
-                              </h3>
+                              </h2>
                               <p className="text-sm text-muted-foreground truncate">
                                 {project.clientName || 'No client'}
                               </p>

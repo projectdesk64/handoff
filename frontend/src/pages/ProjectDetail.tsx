@@ -9,7 +9,7 @@ import { SkeletonProjectDetail } from '../components/SkeletonProjectDetail';
 import { getProjectStatus, getDueAmount, isOverdue, getMissingCompletionRequirements, getMissingDeliveryRequirements } from '../utils/status';
 import { formatINR } from '../utils/currency';
 import { formatDate } from '../utils/date';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Layout } from '../components/Layout';
 import { validateURL } from '../utils/validation';
@@ -325,7 +325,7 @@ export function ProjectDetail() {
         <section>
           <Card className="rounded-xl overflow-hidden border-border shadow-sm">
             <CardHeader className="pb-2 pt-6 px-6">
-              <CardTitle className="text-base font-semibold text-foreground">Payment Details</CardTitle>
+              <h2 className="text-base font-semibold text-foreground leading-none tracking-tight">Payment Details</h2>
             </CardHeader>
             <CardContent className="space-y-3 pt-6 text-sm">
               <div className="flex justify-between items-center">
@@ -419,9 +419,9 @@ export function ProjectDetail() {
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold tracking-tight text-foreground">
+              <h2 className="text-lg font-semibold tracking-tight text-foreground">
                 Project Links
-              </h3>
+              </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Stored for future reference
               </p>
@@ -637,23 +637,23 @@ export function ProjectDetail() {
 
         {/* SECTION 4 — PROJECT DETAILS */}
         <section className="space-y-6">
-          <h3 className="text-lg font-semibold tracking-tight">Project Specifications</h3>
+          <h2 className="text-lg font-semibold tracking-tight">Project Specifications</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 text-sm">
             <div>
-              <h4 className="font-medium text-muted-foreground mb-1.5">Client</h4>
+              <h3 className="font-medium text-muted-foreground mb-1.5">Client</h3>
               <p className="font-medium">{project.clientName || '—'}</p>
             </div>
             <div>
-              <h4 className="font-medium text-muted-foreground mb-1.5">Type</h4>
+              <h3 className="font-medium text-muted-foreground mb-1.5">Type</h3>
               <p className="capitalize font-medium">{project.type}</p>
             </div>
             <div className="md:col-span-2">
-              <h4 className="font-medium text-muted-foreground mb-1.5">Tech Stack</h4>
+              <h3 className="font-medium text-muted-foreground mb-1.5">Tech Stack</h3>
               <p className="font-medium">{project.techStack || '—'}</p>
             </div>
             <div className="md:col-span-2">
-              <h4 className="font-medium text-muted-foreground mb-1.5">Deliverables</h4>
+              <h3 className="font-medium text-muted-foreground mb-1.5">Deliverables</h3>
               <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">{project.deliverables || '—'}</p>
             </div>
 
@@ -666,9 +666,9 @@ export function ProjectDetail() {
         {/* SECTION 5 — PARTNER SHARE (RECORD ONLY) */}
         <section className="bg-muted/50 p-4 rounded-lg border border-dashed border-border mt-8">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+            <h2 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
               Partner Share Record
-            </h3>
+            </h2>
             <span className="text-[10px] text-muted-foreground font-medium px-2 py-0.5 bg-muted rounded">INTERNAL</span>
           </div>
 
