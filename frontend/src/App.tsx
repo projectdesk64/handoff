@@ -15,7 +15,7 @@ function App() {
   return (
     <ToastProvider>
       <ProjectProviderWithToast>
-        <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/" element={<Navigate to="/projects" replace />} />
             <Route path="/projects" element={<ProjectList />} />
