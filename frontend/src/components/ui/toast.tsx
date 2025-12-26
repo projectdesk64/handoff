@@ -12,9 +12,9 @@ const toastVariants = cva(
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground",
         success:
-          "border-green-200 bg-green-50 text-green-900 dark:border-green-800 dark:bg-green-950 dark:text-green-50",
+          "border-success bg-white text-success dark:bg-zinc-950 dark:text-success", // High contrast: white bg, colored text/border
         info:
-          "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-50",
+          "border-info bg-white text-info dark:bg-zinc-950 dark:text-info",
       },
     },
     defaultVariants: {
@@ -25,7 +25,7 @@ const toastVariants = cva(
 
 export interface ToastProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof toastVariants> {
+  VariantProps<typeof toastVariants> {
   onClose?: () => void
 }
 

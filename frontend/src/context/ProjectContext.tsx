@@ -74,7 +74,7 @@ export function ProjectProvider({ children, toast }: ProjectProviderProps) {
         throw new Error(errorData.error || 'Failed to create project');
       }
       await fetchProjects();
-      toast?.success('Project created', 'Project has been created successfully');
+      // toast.success removed to avoid duplication
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
@@ -95,7 +95,7 @@ export function ProjectProvider({ children, toast }: ProjectProviderProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(projectUpdates),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Failed to update project');
@@ -109,7 +109,7 @@ export function ProjectProvider({ children, toast }: ProjectProviderProps) {
         prevProjects.map((p) => (p.id === id ? updatedProject : p))
       );
 
-      toast?.success('Project updated', 'Project has been updated successfully');
+      // toast.success removed to avoid duplication
       return updatedProject;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
@@ -130,7 +130,8 @@ export function ProjectProvider({ children, toast }: ProjectProviderProps) {
       });
       if (!response.ok) throw new Error('Failed to delete project');
       await fetchProjects();
-      toast?.success('Project deleted', 'Project has been deleted successfully');
+      await fetchProjects();
+      // toast.success removed to avoid duplication
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);

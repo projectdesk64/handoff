@@ -8,25 +8,30 @@ export type ProjectStatus =
   | 'Delivered';
 
 export function getProjectStatus(project: Project): ProjectStatus {
-  if (project.advanceReceived === 0) {
-    return 'Not Started';
-  }
-
-  if (project.completedAt == null) {
-    return 'In Progress';
+  // 1. Delivered
+  if (project.deliveredAt != null) {
+    return 'Delivered';
   }
 
   const dueAmount = Math.max(0, project.totalAmount - project.totalReceived);
 
-  if (dueAmount > 0) {
-    return 'Completed (Payment Pending)';
-  }
-
-  if (project.deliveredAt == null) {
+  // 2. Ready to Deliver
+  if (project.completedAt != null && dueAmount === 0) {
     return 'Ready to Deliver';
   }
 
-  return 'Delivered';
+  // 3. Completed (Payment Pending)
+  if (project.completedAt != null && dueAmount > 0) {
+    return 'Completed (Payment Pending)';
+  }
+
+  // 4. In Progress
+  if (project.totalReceived > 0) {
+    return 'In Progress';
+  }
+
+  // 5. Not Started
+  return 'Not Started';
 }
 
 export function getDueAmount(project: Project): number {
@@ -46,5 +51,31 @@ export function isOverdue(project: Project): boolean {
   // Reset time part for accurate date matching if needed, or keep precise time
   now.setHours(0, 0, 0, 0);
   return deadline < now;
+}
+
+export function isProjectFullyDetailed(project: Project): boolean {
+  const hasMetadata = !!(project.clientName && project.techStack && project.deliverables);
+  const hasLinks = !!(project.repoLink && project.liveLink && project.completionVideoLink);
+  const hasShares = (project.harshkShareGiven !== undefined && project.harshkShareGiven !== null) &&
+    (project.nikkuShareGiven !== undefined && project.nikkuShareGiven !== null);
+
+  return hasMetadata && hasLinks && hasShares;
+}
+
+export function getMissingCompletionRequirements(project: Project): string[] {
+  const missing: string[] = [];
+  if (!project.clientName) missing.push('Client name');
+  if (!project.techStack) missing.push('Tech stack');
+  if (!project.deliverables) missing.push('Deliverables');
+  return missing;
+}
+
+export function getMissingDeliveryRequirements(project: Project): string[] {
+  const missing: string[] = [];
+  // Delivery requires the actual work (links) to be present
+  if (!project.repoLink) missing.push('Repository link');
+  if (!project.liveLink) missing.push('Live link');
+  if (!project.completionVideoLink) missing.push('Completion video');
+  return missing;
 }
 

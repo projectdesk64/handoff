@@ -112,7 +112,7 @@ export function ProjectList() {
             return (
               <Card
                 key={project.id}
-                className={`cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border ${overdue ? 'border-l-4 border-l-destructive' : ''}`}
+                className={`cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border-border ${overdue ? 'border-l-4 border-l-destructive' : ''}`}
                 onClick={() => navigate(`/projects/${project.id}`)}
               >
                 <CardContent className="p-6">
@@ -136,7 +136,7 @@ export function ProjectList() {
                           : 'bg-secondary text-secondary-foreground border-border'
                           }`}>
                           {status}
-                          {overdue && <span className="font-semibold ml-1">(Overdue)</span>}
+
                         </div>
                       </div>
                     </div>

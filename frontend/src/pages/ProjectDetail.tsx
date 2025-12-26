@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useProjects } from '../context/ProjectContext';
 import { useToast } from '../context/ToastContext';
 import { Project } from '../models/Project';
-import { getProjectStatus, getDueAmount, isOverdue } from '../utils/status';
+import { getProjectStatus, getDueAmount, isOverdue, getMissingCompletionRequirements, getMissingDeliveryRequirements } from '../utils/status';
 import { formatINR } from '../utils/currency';
 import { formatDate } from '../utils/date';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -72,7 +72,10 @@ export function ProjectDetail() {
   const dueAmount = getDueAmount(project);
   const overdue = isOverdue(project);
 
-  const handleStatusUpdate = async (type: 'delivered') => {
+  const missingCompletionDetails = getMissingCompletionRequirements(project);
+  const missingDeliveryDetails = getMissingDeliveryRequirements(project);
+
+  const handleStatusUpdate = async (type: 'delivered' | 'completed') => {
     if (!project || !id) return;
     setStatusUpdating(true);
     try {
@@ -81,6 +84,8 @@ export function ProjectDetail() {
 
       if (type === 'delivered') {
         updates.deliveredAt = now;
+      } else if (type === 'completed') {
+        updates.completedAt = now;
       }
 
       // Update project and use returned updated project
@@ -161,13 +166,36 @@ export function ProjectDetail() {
     <Layout
       title={project.name}
       actions={
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/')}>
+        <div className="flex gap-2 items-center">
+          <Button variant="ghost" onClick={() => navigate('/')}>
             Back
           </Button>
-          <Button onClick={() => navigate(`/projects/${project.id}/edit`)}>
-            Edit Project
+          <Button variant="outline" onClick={() => navigate(`/projects/${project.id}/edit`)}>
+            Edit
           </Button>
+
+          {status === 'Ready to Deliver' && (
+            <div title={missingDeliveryDetails.length > 0 ? `To continue, please add: ${missingDeliveryDetails.join(', ')}` : undefined}>
+              <Button
+                className="bg-success hover:bg-success/90 text-primary-foreground"
+                onClick={() => handleStatusUpdate('delivered')}
+                disabled={statusUpdating || dueAmount > 0 || missingDeliveryDetails.length > 0}
+              >
+                {statusUpdating ? 'Updating...' : 'Mark as Delivered'}
+              </Button>
+            </div>
+          )}
+
+          {status === 'In Progress' && (
+            <div title={missingCompletionDetails.length > 0 ? `To continue, please add: ${missingCompletionDetails.join(', ')}` : undefined}>
+              <Button
+                onClick={() => handleStatusUpdate('completed')}
+                disabled={statusUpdating || missingCompletionDetails.length > 0}
+              >
+                {statusUpdating ? 'Updating...' : 'Mark as Completed'}
+              </Button>
+            </div>
+          )}
         </div>
       }
     >
@@ -191,18 +219,7 @@ export function ProjectDetail() {
                 </span>
               )}
 
-              {/* Status Actions */}
 
-              {status === 'Ready to Deliver' && (
-                <Button
-                  size="sm"
-                  className="bg-success hover:bg-success/90 text-primary-foreground ml-2"
-                  onClick={() => handleStatusUpdate('delivered')}
-                  disabled={statusUpdating || dueAmount > 0}
-                >
-                  {statusUpdating ? 'Updating...' : 'Mark as Delivered'}
-                </Button>
-              )}
 
             </div>
 

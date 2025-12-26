@@ -17,7 +17,8 @@ function App() {
       <ProjectProviderWithToast>
         <Router>
           <Routes>
-            <Route path="/" element={<ProjectList />} />
+            <Route path="/" element={<Navigate to="/projects" replace />} />
+            <Route path="/projects" element={<ProjectList />} />
             <Route path="/projects/new" element={<ProjectForm />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/projects/:id/edit" element={<ProjectForm />} />

@@ -58,8 +58,10 @@ export function ProjectForm() {
     try {
       if (isEditing && id) {
         await updateProject(id, formData);
+        toast.success('Project updated', 'The project details have been updated.');
       } else {
         await createProject(formData as Omit<Project, 'id' | 'createdAt'>);
+        toast.success('Project created', 'The new project has been created successfully.');
       }
       navigate('/');
     } catch (error) {
