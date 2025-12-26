@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useProjects } from '../context/ProjectContext';
+import { ExpandCollapse } from '../components/ExpandCollapse';
 import { useToast } from '../context/ToastContext';
 import { Project } from '../models/Project';
 import { getProjectStatus, getDueAmount, isOverdue, getMissingCompletionRequirements, getMissingDeliveryRequirements } from '../utils/status';
@@ -224,17 +226,23 @@ export function ProjectDetail() {
             </div>
 
             {/* Status Guidance */}
-            {status === 'Completed (Payment Pending)' && (
-              <p className="text-sm text-warning font-medium flex items-center gap-2">
-                Delivery is paused until payment is settled.
-              </p>
-            )}
+            <AnimatePresence>
+              {status === 'Completed (Payment Pending)' && (
+                <ExpandCollapse key="status-pending">
+                  <p className="text-sm text-warning font-medium flex items-center gap-2">
+                    Delivery is paused until payment is settled.
+                  </p>
+                </ExpandCollapse>
+              )}
 
-            {status === 'Ready to Deliver' && (
-              <p className="text-sm text-success font-medium flex items-center gap-2">
-                Payment settled. Ready for delivery.
-              </p>
-            )}
+              {status === 'Ready to Deliver' && (
+                <ExpandCollapse key="status-ready">
+                  <p className="text-sm text-success font-medium flex items-center gap-2">
+                    Payment settled. Ready for delivery.
+                  </p>
+                </ExpandCollapse>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-end gap-6 sm:gap-16">
@@ -281,41 +289,53 @@ export function ProjectDetail() {
                   <span className="font-medium">{formatINR(project.totalReceived)}</span>
                 </div>
 
-                {isAddingPayment ? (
-                  <div className="bg-muted/50 p-3 rounded-md border border-border mt-2 space-y-3 animate-in fade-in zoom-in-95 duration-200">
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Record New Payment</label>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
-                        <input
-                          type="number"
-                          autoFocus
-                          placeholder="Amount"
-                          step="1"
-                          className="w-full pl-7 pr-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                          value={paymentAmount}
-                          onChange={(e) => setPaymentAmount(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handlePaymentSubmit()}
-                        />
+                <AnimatePresence mode="wait" initial={false}>
+                  {isAddingPayment ? (
+                    <ExpandCollapse key="payment-form">
+                      <div className="bg-muted/50 p-3 rounded-md border border-border mt-2 space-y-3">
+                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Record New Payment</label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
+                            <input
+                              type="number"
+                              autoFocus
+                              placeholder="Amount"
+                              step="1"
+                              className="w-full pl-7 pr-3 py-1.5 text-sm border border-input rounded-md bg-transparent transition-all focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                              value={paymentAmount}
+                              onChange={(e) => setPaymentAmount(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handlePaymentSubmit()}
+                            />
+                          </div>
+                          <Button size="sm" onClick={handlePaymentSubmit} disabled={!paymentAmount || Number(paymentAmount) <= 0}>Save</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setIsAddingPayment(false); setPaymentAmount(''); }}>Cancel</Button>
+                        </div>
+                        {Number(paymentAmount) > dueAmount && (
+                          <p className="text-xs text-warning font-medium">
+                            Note: Payment exceeds due amount
+                          </p>
+                        )}
+                        {paymentError && <p className="text-xs text-destructive">{paymentError}</p>}
                       </div>
-                      <Button size="sm" onClick={handlePaymentSubmit} disabled={!paymentAmount || Number(paymentAmount) <= 0}>Save</Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setIsAddingPayment(false); setPaymentAmount(''); }}>Cancel</Button>
-                    </div>
-                    {Number(paymentAmount) > dueAmount && (
-                      <p className="text-xs text-warning font-medium">
-                        Note: Payment exceeds due amount
-                      </p>
-                    )}
-                    {paymentError && <p className="text-xs text-destructive">{paymentError}</p>}
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setIsAddingPayment(true)}
-                    className="text-sm text-primary hover:text-primary/90 hover:underline font-medium flex items-center gap-1 mt-1"
-                  >
-                    + Record Payment
-                  </button>
-                )}
+                    </ExpandCollapse>
+                  ) : (
+                    <motion.div
+                      key="payment-button"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <button
+                        onClick={() => setIsAddingPayment(true)}
+                        className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1 mt-2 px-2 py-1 -ml-2 rounded-md hover:bg-primary/5 transition-colors"
+                      >
+                        + Record Payment
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               <div className="my-2 h-px bg-border" />
               <div className="flex justify-between items-center text-base">
@@ -353,30 +373,42 @@ export function ProjectDetail() {
             <div className="py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground mb-1">Source Code Repository</p>
-                {editingLink === 'repo' ? (
-                  <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
-                    <input
-                      type="url"
-                      placeholder="https://github.com/..."
-                      className="flex-1 text-sm border-input rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-ring"
-                      value={tempLinkValue}
-                      onChange={(e) => setTempLinkValue(e.target.value)}
-                      autoFocus
-                    />
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleLinkUpdate('repoLink')}>Save</Button>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
-                    </div>
-                  </div>
-                ) : (
-                  project.repoLink ? (
-                    <a href={project.repoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
-                      {project.repoLink}
-                    </a>
+                <AnimatePresence mode="wait" initial={false}>
+                  {editingLink === 'repo' ? (
+                    <ExpandCollapse key="repo-edit">
+                      <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
+                        <input
+                          type="url"
+                          placeholder="https://github.com/..."
+                          className="flex-1 text-sm border border-input rounded-md px-3 py-1.5 bg-transparent transition-all focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                          value={tempLinkValue}
+                          onChange={(e) => setTempLinkValue(e.target.value)}
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => handleLinkUpdate('repoLink')}>Save</Button>
+                          <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                        </div>
+                      </div>
+                    </ExpandCollapse>
                   ) : (
-                    <span className="text-sm text-muted-foreground">Not added</span>
-                  )
-                )}
+                    <motion.div
+                      key="repo-view"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {project.repoLink ? (
+                        <a href={project.repoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
+                          {project.repoLink}
+                        </a>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not added</span>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               {editingLink !== 'repo' && (
                 <Button
@@ -394,30 +426,42 @@ export function ProjectDetail() {
             <div className="py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground mb-1">Live Website</p>
-                {editingLink === 'live' ? (
-                  <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
-                    <input
-                      type="url"
-                      placeholder="https://..."
-                      className="flex-1 text-sm border-input rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-ring"
-                      value={tempLinkValue}
-                      onChange={(e) => setTempLinkValue(e.target.value)}
-                      autoFocus
-                    />
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleLinkUpdate('liveLink')}>Save</Button>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
-                    </div>
-                  </div>
-                ) : (
-                  project.liveLink ? (
-                    <a href={project.liveLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
-                      {project.liveLink}
-                    </a>
+                <AnimatePresence mode="wait" initial={false}>
+                  {editingLink === 'live' ? (
+                    <ExpandCollapse key="live-edit">
+                      <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
+                        <input
+                          type="url"
+                          placeholder="https://..."
+                          className="flex-1 text-sm border border-input rounded-md px-3 py-1.5 bg-transparent transition-all focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                          value={tempLinkValue}
+                          onChange={(e) => setTempLinkValue(e.target.value)}
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => handleLinkUpdate('liveLink')}>Save</Button>
+                          <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                        </div>
+                      </div>
+                    </ExpandCollapse>
                   ) : (
-                    <span className="text-sm text-muted-foreground">Not added</span>
-                  )
-                )}
+                    <motion.div
+                      key="live-view"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {project.liveLink ? (
+                        <a href={project.liveLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
+                          {project.liveLink}
+                        </a>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not added</span>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               {editingLink !== 'live' && (
                 <Button
@@ -435,30 +479,42 @@ export function ProjectDetail() {
             <div className="py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground mb-1">Completion Video</p>
-                {editingLink === 'video' ? (
-                  <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
-                    <input
-                      type="url"
-                      placeholder="https://loom.com/..."
-                      className="flex-1 text-sm border-input rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-ring"
-                      value={tempLinkValue}
-                      onChange={(e) => setTempLinkValue(e.target.value)}
-                      autoFocus
-                    />
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleLinkUpdate('completionVideoLink')}>Save</Button>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
-                    </div>
-                  </div>
-                ) : (
-                  project.completionVideoLink ? (
-                    <a href={project.completionVideoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
-                      {project.completionVideoLink}
-                    </a>
+                <AnimatePresence mode="wait" initial={false}>
+                  {editingLink === 'video' ? (
+                    <ExpandCollapse key="video-edit">
+                      <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
+                        <input
+                          type="url"
+                          placeholder="https://loom.com/..."
+                          className="flex-1 text-sm border border-input rounded-md px-3 py-1.5 bg-transparent transition-all focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                          value={tempLinkValue}
+                          onChange={(e) => setTempLinkValue(e.target.value)}
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => handleLinkUpdate('completionVideoLink')}>Save</Button>
+                          <Button size="sm" variant="ghost" onClick={() => setEditingLink(null)}>Cancel</Button>
+                        </div>
+                      </div>
+                    </ExpandCollapse>
                   ) : (
-                    <span className="text-sm text-muted-foreground">Not added</span>
-                  )
-                )}
+                    <motion.div
+                      key="video-view"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {project.completionVideoLink ? (
+                        <a href={project.completionVideoLink} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline truncate block">
+                          {project.completionVideoLink}
+                        </a>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not added</span>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               {editingLink !== 'video' && (
                 <Button
@@ -474,11 +530,15 @@ export function ProjectDetail() {
           </div>
 
           {/* Delivered Footer Message */}
-          {status === 'Delivered' && (
-            <div className="bg-success/10 text-success border border-success/20 p-4 rounded-lg text-sm text-center font-medium">
-              Project delivered on {formatDate(project.deliveredAt || '')}
-            </div>
-          )}
+          <AnimatePresence>
+            {status === 'Delivered' && (
+              <ExpandCollapse key="delivered-msg">
+                <div className="bg-success/10 text-success border border-success/20 p-4 rounded-lg text-sm text-center font-medium">
+                  Project delivered on {formatDate(project.deliveredAt || '')}
+                </div>
+              </ExpandCollapse>
+            )}
+          </AnimatePresence>
         </section>
 
         <Separator />
