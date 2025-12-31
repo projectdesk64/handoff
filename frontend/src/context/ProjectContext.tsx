@@ -1,19 +1,18 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { Project } from '../models/Project';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = '/api';
 
 // Helper to normalize backend data (JSON strings -> Arrays)
 const normalizeProject = (data: any): Project => {
   const normalizeArrayField = (field: any): string[] => {
     if (!field) return [];
-    if (Array.isArray(field)) return field; // Should not happen if backend sends strings, but safe
+    if (Array.isArray(field)) return field;
     if (typeof field === 'string') {
       try {
         const parsed = JSON.parse(field);
         return Array.isArray(parsed) ? parsed : [field];
       } catch {
-        // If not valid JSON, treat as single item or empty
         return field.trim() ? [field] : [];
       }
     }

@@ -32,16 +32,45 @@ func main() {
 	r := mux.NewRouter()
 
 	// API routes
-	r.HandleFunc("/projects", handlers.GetProjects).Methods("GET")
-	r.HandleFunc("/projects/{id}", handlers.GetProject).Methods("GET")
-	r.HandleFunc("/projects", handlers.CreateProject).Methods("POST")
-	r.HandleFunc("/projects/{id}", handlers.UpdateProject).Methods("PUT")
-	r.HandleFunc("/projects/{id}", handlers.DeleteProject).Methods("DELETE")
+	api := r.PathPrefix("/api").Subrouter()
+	api.HandleFunc("/projects", handlers.GetProjects).Methods("GET")
+	api.HandleFunc("/projects/{id}", handlers.GetProject).Methods("GET")
+	api.HandleFunc("/projects", handlers.CreateProject).Methods("POST")
+	api.HandleFunc("/projects/{id}", handlers.UpdateProject).Methods("PUT")
+	api.HandleFunc("/projects/{id}", handlers.DeleteProject).Methods("DELETE")
+
+	// Serve frontend static files
+	frontendDir := "../frontend/dist"
+	spa := spaHandler{staticPath: frontendDir, indexPath: "index.html"}
+	r.PathPrefix("/").Handler(spa)
 
 	handler := corsMiddleware(r)
 
 	log.Println("Starting handoff backend on :8080")
 	log.Fatal(http.ListenAndServe(":8080", handler))
+}
+
+type spaHandler struct {
+	staticPath string
+	indexPath  string
+}
+
+func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	path := filepath.Join(h.staticPath, r.URL.Path)
+
+	// check if file exists
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		// file does not exist, serve index.html
+		http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexPath))
+		return
+	} else if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// otherwise, serve the file
+	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
 }
 
 func corsMiddleware(next http.Handler) http.Handler {
