@@ -84,6 +84,24 @@ func runMigrations() error {
 		return err
 	}
 
+	auditLogsSQL := `
+	CREATE TABLE IF NOT EXISTS audit_logs (
+		id TEXT PRIMARY KEY,
+		project_id TEXT NOT NULL,
+		action TEXT NOT NULL,
+		field_name TEXT,
+		old_value TEXT,
+		new_value TEXT,
+		created_at TEXT NOT NULL
+	);
+	CREATE INDEX IF NOT EXISTS idx_audit_logs_project_id ON audit_logs(project_id);
+	CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
+	`
+
+	if _, err := DB.Exec(auditLogsSQL); err != nil {
+		return err
+	}
+
 	// Safe migration: Add new partner share columns if they don't exist
 	// SQLite lacks IF NOT EXISTS for ADD COLUMN, so we ignore specific errors
 	migrations := []string{
@@ -106,4 +124,17 @@ func runMigrations() error {
 	}
 
 	return nil
+}
+
+func InsertAuditLog(id, projectID, action string, fieldName, oldValue, newValue *string, createdAt string) error {
+	query := `
+		INSERT INTO audit_logs (id, project_id, action, field_name, old_value, new_value, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	`
+	_, err := DB.Exec(query, id, projectID, action, fieldName, oldValue, newValue, createdAt)
+	return err
+}
+
+func Close() error {
+	return DB.Close()
 }

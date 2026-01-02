@@ -158,14 +158,18 @@ export function ProjectForm() {
     const { name, value } = e.target;
 
     setFormData((prev) => {
-      let newValue: string | number = value;
+      let newValue: string | number | undefined = value;
       const numericFields = [
         'totalAmount', 'advanceReceived', 'totalReceived',
         'partnerShareGiven', 'harshkShareGiven', 'nikkuShareGiven'
       ];
 
       if (numericFields.includes(name)) {
-        newValue = parseFloat(value) || 0;
+        if (value !== '' && !/^\d*\.?\d*$/.test(value)) {
+          return prev;
+        }
+
+        newValue = value === '' ? undefined : parseFloat(value);
       }
 
       const updates = {
@@ -174,7 +178,7 @@ export function ProjectForm() {
       };
 
       if (name === 'advanceReceived') {
-        const newAdvance = newValue as number;
+        const newAdvance = (newValue as number) || 0;
         const oldAdvance = prev.advanceReceived || 0;
         const difference = newAdvance - oldAdvance;
         updates.totalReceived = (prev.totalReceived || 0) + difference;
@@ -320,13 +324,12 @@ export function ProjectForm() {
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                     <input
-                      type="number"
-                      name="totalAmount"
-                      value={formData.totalAmount || 0}
+                      value={formData.totalAmount ?? ''}
                       onChange={handleChange}
                       required
-                      min="0"
-                      step="1"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
                       className="w-full pl-7 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                     />
                   </div>
@@ -337,12 +340,11 @@ export function ProjectForm() {
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                     <input
-                      type="number"
-                      name="advanceReceived"
-                      value={formData.advanceReceived || 0}
+                      value={formData.advanceReceived ?? ''}
                       onChange={handleChange}
-                      min="0"
-                      step="1"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
                       className="w-full pl-7 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
@@ -353,12 +355,11 @@ export function ProjectForm() {
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                     <input
-                      type="number"
-                      name="totalReceived"
-                      value={formData.totalReceived || 0}
+                      value={formData.totalReceived ?? ''}
                       onChange={handleChange}
-                      min="0"
-                      step="1"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
                       className="w-full pl-7 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
@@ -440,12 +441,11 @@ export function ProjectForm() {
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                     <input
-                      type="number"
-                      name="harshkShareGiven"
-                      value={formData.harshkShareGiven || 0}
+                      value={formData.harshkShareGiven ?? ''}
                       onChange={handleChange}
-                      min="0"
-                      step="1"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
                       className="w-full pl-7 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
@@ -477,12 +477,11 @@ export function ProjectForm() {
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
                     <input
-                      type="number"
-                      name="nikkuShareGiven"
-                      value={formData.nikkuShareGiven || 0}
+                      value={formData.nikkuShareGiven ?? ''}
                       onChange={handleChange}
-                      min="0"
-                      step="1"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
                       className="w-full pl-7 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>

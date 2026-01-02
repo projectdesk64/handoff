@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"regexp"
@@ -11,6 +12,7 @@ import (
 	"project-tracker/db"
 	"project-tracker/models"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -164,6 +166,23 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Audit Log
+	auditID := uuid.New().String()
+	// createdAt is already calculated in p.CreatedAt or set above, but prompt asked for:
+	// createdAt := time.Now().UTC().Format(time.RFC3339)
+	// We can reuse p.CreatedAt if it matches, or just follow the prompt strictly.
+	// The prompt said: createdAt := time.Now().UTC().Format(time.RFC3339)
+	// I will generate a fresh timestamp for the audit log as requested, although p.CreatedAt is likely same.
+	auditCreatedAt := time.Now().UTC().Format(time.RFC3339)
+
+	_ = db.InsertAuditLog(
+		auditID,
+		p.ID,
+		"PROJECT_CREATED",
+		nil, nil, nil,
+		auditCreatedAt,
+	)
+
 	respondJSON(w, http.StatusCreated, p)
 }
 
@@ -184,10 +203,24 @@ func UpdateProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if project exists
-	var exists bool
-	err := db.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM projects WHERE id = ?)", id).Scan(&exists)
-	if err != nil || !exists {
+	// Step 1: Fetch old project state
+	var oldProject models.Project
+	err := oldProject.Scan(db.DB.QueryRow(`
+		SELECT id, name, clientName, description, type, createdAt, startDate, deadline,
+		       completedAt, deliveredAt, totalAmount, advanceReceived, totalReceived,
+		       partnerShareGiven, partnerShareDate, harshk_share_given, harshk_share_date,
+		       nikku_share_given, nikku_share_date, completionVideoLink, completionNotes,
+		       repoLink, liveLink, deliveryNotes, techStack, deliverables, internalNotes
+		FROM projects
+		WHERE id = ?
+	`, id))
+
+	if err == sql.ErrNoRows {
 		respondError(w, http.StatusNotFound, "Project not found")
+		return
+	}
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to fetch project")
 		return
 	}
 
@@ -206,9 +239,9 @@ func UpdateProject(w http.ResponseWriter, r *http.Request) {
 		"completedAt":         "completedAt",
 		"deliveredAt":         "deliveredAt",
 		"totalAmount":         "totalAmount",
-		"advanceReceived":    "advanceReceived",
+		"advanceReceived":     "advanceReceived",
 		"totalReceived":       "totalReceived",
-		"partnerShareGiven":  "partnerShareGiven",
+		"partnerShareGiven":   "partnerShareGiven",
 		"partnerShareDate":    "partnerShareDate",
 		"harshkShareGiven":    "harshk_share_given",
 		"harshkShareDate":     "harshk_share_date",
@@ -334,6 +367,37 @@ func UpdateProject(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusInternalServerError, "Failed to fetch updated project")
 		return
 	}
+
+	// Audit Log
+	// Step 2 & 3: Compare fields and log changes safely
+	go func(old, new models.Project, updates map[string]interface{}) {
+		logChange := func(field, oldVal, newVal string) {
+			auditID := uuid.New().String()
+			ts := time.Now().UTC().Format(time.RFC3339)
+			// Ignore errors as per safety rules
+			_ = db.InsertAuditLog(auditID, new.ID, "PROJECT_UPDATED", &field, &oldVal, &newVal, ts)
+		}
+
+		// Track: name
+		if _, ok := updates["name"]; ok && old.Name != new.Name {
+			logChange("name", old.Name, new.Name)
+		}
+
+		// Track: deadline
+		if _, ok := updates["deadline"]; ok && old.Deadline != new.Deadline {
+			logChange("deadline", old.Deadline, new.Deadline)
+		}
+
+		// Track: totalAmount
+		if _, ok := updates["totalAmount"]; ok && old.TotalAmount != new.TotalAmount {
+			logChange("totalAmount", fmt.Sprintf("%g", old.TotalAmount), fmt.Sprintf("%g", new.TotalAmount))
+		}
+
+		// Track: totalReceived
+		if _, ok := updates["totalReceived"]; ok && old.TotalReceived != new.TotalReceived {
+			logChange("totalReceived", fmt.Sprintf("%g", old.TotalReceived), fmt.Sprintf("%g", new.TotalReceived))
+		}
+	}(oldProject, p, updates)
 
 	respondJSON(w, http.StatusOK, p)
 }

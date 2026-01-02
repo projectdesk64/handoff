@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
+	"time"
 
 	"project-tracker/db"
 	"project-tracker/handlers"
@@ -14,14 +19,36 @@ import (
 
 var dbPath string
 
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
 func main() {
-	// Ensure data directory exists
-	dataDir := filepath.Join(".", "data")
-	if err := os.MkdirAll(dataDir, 0755); err != nil {
-		log.Fatal("Failed to create data directory:", err)
+	// Setup logging
+	logFile, err := os.OpenFile(
+		"logs/app.log",
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY,
+		0644,
+	)
+	if err != nil {
+		log.Fatalf("failed to open log file: %v", err)
+	}
+	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
+	// Configure Database Path
+	dbPath = getEnv("DB_PATH", "data/projects.db")
+
+	dbDir := filepath.Dir(dbPath)
+	// Ensure database directory exists
+	if err := os.MkdirAll(dbDir, 0755); err != nil {
+		log.Fatalf("failed to create database directory %s: %v", dbDir, err)
 	}
 
-	dbPath = filepath.Join(dataDir, "projects.db")
+	log.Println("Using database at:", dbPath)
 
 	// Initialize database
 	if err := db.InitDB(dbPath); err != nil {
@@ -40,14 +67,43 @@ func main() {
 	api.HandleFunc("/projects/{id}", handlers.DeleteProject).Methods("DELETE")
 
 	// Serve frontend static files
-	frontendDir := "../frontend/dist"
+	frontendDir := getEnv("FRONTEND_DIR", "../frontend/dist")
 	spa := spaHandler{staticPath: frontendDir, indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
 
-	handler := corsMiddleware(r)
+	handler := r
 
-	log.Println("Starting handoff backend on :8080")
-	log.Fatal(http.ListenAndServe(":8080", handler))
+	port := getEnv("PORT", "8080")
+	srv := &http.Server{
+		Addr:    "127.0.0.1:" + port,
+		Handler: handler,
+	}
+
+	go func() {
+		log.Println("Server starting on :" + port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen error: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	<-quit
+	log.Println("Shutdown signal received")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("Server forced to shutdown: %v", err)
+	}
+
+	if err := db.Close(); err != nil {
+		log.Printf("Error closing database: %v", err)
+	}
+
+	log.Println("Server exited gracefully")
 }
 
 type spaHandler struct {
@@ -71,19 +127,4 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// otherwise, serve the file
 	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
-}
-
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
 }
