@@ -680,41 +680,79 @@ export function ProjectDetail() {
                   if (!project.deliverables) return <p className="text-muted-foreground italic text-sm">—</p>;
 
                   const delivString = project.deliverables + "";
-                  let items = [];
+                  let rawItems: string[] = [];
                   if (delivString.includes('\n')) {
-                    items = delivString.split('\n');
+                    rawItems = delivString.split('\n');
                   } else {
-                    items = delivString.split(',');
+                    rawItems = delivString.split(',');
                   }
-                  items = items.map(t => t.trim()).filter(Boolean);
+                  
+                  // Parse hierarchy
+                  interface DeliverableItem {
+                    text: string;
+                    subItems: string[];
+                  }
+                  
+                  const structuredItems: DeliverableItem[] = [];
+                  let currentMain: DeliverableItem | null = null;
 
-                  if (items.length === 0) return <p className="text-muted-foreground italic text-sm">—</p>;
+                  rawItems.forEach(raw => {
+                    const trimmed = raw.trim();
+                    if (!trimmed) return;
+
+                    if (trimmed.startsWith('-')) {
+                      // Sub-item
+                      const content = trimmed.substring(1).trim();
+                      if (currentMain) {
+                        currentMain.subItems.push(content);
+                      } else {
+                        // Orphan sub-item, treat as main
+                        currentMain = { text: content, subItems: [] };
+                        structuredItems.push(currentMain);
+                      }
+                    } else {
+                      // Main item
+                      currentMain = { text: trimmed, subItems: [] };
+                      structuredItems.push(currentMain);
+                    }
+                  });
+
+                  if (structuredItems.length === 0) return <p className="text-muted-foreground italic text-sm">—</p>;
 
                   return (
-                    <ul className="space-y-0 divide-y divide-border/30">
-                      {items.map((item, idx) => (
-                        <li
-                          key={idx}
-                          className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
-                        >
-                          {/* Elegant Circle Check */}
-                          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 shrink-0">
-                            <svg
-                              className="w-3 h-3 text-primary"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={3}
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
+                    <div className="space-y-4 mt-3">
+                      {structuredItems.map((item, idx) => (
+                        <div key={idx} className="flex flex-col gap-1">
+                          {/* Main Item */}
+                          <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 shrink-0">
+                              <svg
+                                className="w-3 h-3 text-primary"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={3}
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            <span className="text-sm font-medium text-foreground leading-relaxed">{item.text}</span>
                           </div>
 
-                          {/* Text */}
-                          <span className="text-sm text-foreground">{item}</span>
-                        </li>
+                          {/* Sub Items */}
+                          {item.subItems.length > 0 && (
+                            <div className="ml-2.5 pl-5 border-l-2 border-border/40 space-y-1.5 mt-1">
+                              {item.subItems.map((sub, subIdx) => (
+                                <div key={subIdx} className="flex items-start gap-2 text-muted-foreground">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 mt-1.5 shrink-0" />
+                                  <span className="text-sm leading-relaxed">{sub}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   );
                 })()}
               </div>

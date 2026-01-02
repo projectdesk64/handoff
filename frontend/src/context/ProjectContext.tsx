@@ -13,7 +13,11 @@ const normalizeProject = (data: any): Project => {
         const parsed = JSON.parse(field);
         return Array.isArray(parsed) ? parsed : [field];
       } catch {
-        return field.trim() ? [field] : [];
+        // Handle newline or comma separated strings
+        return field
+          .split(/[\n,]+/) // Split by newline or comma
+          .map(item => item.trim()) // Trim whitespace
+          .filter(item => item.length > 0); // Remove empty strings
       }
     }
     return [];
