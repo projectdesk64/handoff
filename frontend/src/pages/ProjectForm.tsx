@@ -8,6 +8,16 @@ import { Layout } from '../components/Layout';
 import { validateProject, validateURL } from '../utils/validation';
 import { useToast } from '../context/ToastContext';
 
+
+type ProjectFormData = Omit<Project, 'totalAmount' | 'advanceReceived' | 'totalReceived' | 'partnerShareGiven' | 'harshkShareGiven' | 'nikkuShareGiven'> & {
+  totalAmount: string | number;
+  advanceReceived: string | number;
+  totalReceived: string | number;
+  partnerShareGiven?: string | number;
+  harshkShareGiven?: string | number;
+  nikkuShareGiven?: string | number;
+};
+
 export function ProjectForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -15,56 +25,19 @@ export function ProjectForm() {
   const toast = useToast();
   const isEditing = !!id;
 
-  const [formData, setFormData] = useState<Partial<Project>>({
+  const [formData, setFormData] = useState<Partial<ProjectFormData>>({
     name: '',
     clientName: '',
     description: '',
     type: 'software',
     deadline: '',
-    totalAmount: 0,
-    advanceReceived: 0,
-    totalReceived: 0,
+    totalAmount: '',
+    advanceReceived: '',
+    totalReceived: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-
-  // Helper handling array field input
-  // Since we display arrays as comma-separated strings in textareas, we need a way to track the raw string input
-  // before splitting it into an array on submit/update or using split on every change.
-  // For simplicity: We will rely on treating them as strings in the form state (for editing) and parse on submit?
-  // Wait, the form state `formData` uses `Partial<Project>`. `Project` now has `string[]`.
-  // But `<textarea>` needs a string.
-  // We will maintain local state or derived state for these inputs.
-
-  // Actually, let's keep it simple: join on render, split on change.
-  // This might be annoying if typing "Vue, ", so we should only split on blur or keep a local string state.
-  // Let's assume we update the ARRAY in formData on every change by splitting the string value.
-  // BUT: "React," -> ["React", ""] -> if we join back it becomes "React,".
-  // "React, " -> ["React", " "] -> "React, ".
-  // This works.
-
-  // NOTE: Simple split/join strategy:
-  // value={formData.techStack?.join(', ') || ''}
-  // onChange={(e) => update({ techStack: e.target.value.split(',').map(s => s.trim()) })}
-  // Issue: Typing "React," immediately becomes "React" if we trim and join back? No.
-  // If we split on every change, we need to be careful.
-
-  // BETTER STRATEGY for Textareas:
-  // Render `defaultValue` or use a separate local state for the string representation, sync on blur/submit?
-  // Or: Just use string state for the textareas and convert to array in `formData` only when calling context?
-  //
-  // Given constraints: We want to modify ProjectForm to work with the new type.
-  // Let's change `formData` to hold local string versions for these two fields, 
-  // OR cast them.
-  //
-  // Let's simply cast safely in the render: `(formData.techStack || []).join(', ')`
-  // And update `formData.techStack` by splitting on change.
-  // To avoid cursor jumping/trimming issues while typing, we CANNOT split/trim on every keypress if we also map back to value.
-  //
-  // Solution: Use `string` in `formData` temporarily? No, type safety.
-  // Solution: Use local string state for these two fields.
-
   const [techStackInput, setTechStackInput] = useState('');
   const [deliverablesInput, setDeliverablesInput] = useState('');
 
@@ -89,7 +62,28 @@ export function ProjectForm() {
     e.preventDefault();
 
     // Validate form
-    const validation = validateProject(formData);
+    // We need to cast back to Project for validation or adjust validation to handle strings (which might fail validation if it expects numbers)
+    // The existing validationProject likely checks typeof === 'number'.
+    // Let's prepare a cleaned object for validation and submission.
+
+    const cleanNumber = (val: string | number | undefined): number => {
+      if (typeof val === 'number') return val;
+      if (!val) return 0;
+      const parsed = parseFloat(val.toString());
+      return isNaN(parsed) ? 0 : parsed;
+    };
+
+    const submissionData: any = {
+      ...formData,
+      totalAmount: cleanNumber(formData.totalAmount),
+      advanceReceived: cleanNumber(formData.advanceReceived),
+      totalReceived: cleanNumber(formData.totalReceived),
+      partnerShareGiven: formData.partnerShareGiven ? cleanNumber(formData.partnerShareGiven) : undefined,
+      harshkShareGiven: formData.harshkShareGiven ? cleanNumber(formData.harshkShareGiven) : undefined,
+      nikkuShareGiven: formData.nikkuShareGiven ? cleanNumber(formData.nikkuShareGiven) : undefined,
+    };
+
+    const validation = validateProject(submissionData);
     if (!validation.isValid) {
       const errorMap: Record<string, string> = {};
       validation.errors.forEach((err) => {
@@ -102,10 +96,10 @@ export function ProjectForm() {
 
     try {
       if (isEditing && id) {
-        await updateProject(id, formData);
+        await updateProject(id, submissionData);
         toast.success('Project updated', 'The project details have been updated.');
       } else {
-        await createProject(formData as Omit<Project, 'id' | 'createdAt'>);
+        await createProject(submissionData as Omit<Project, 'id' | 'createdAt'>);
         toast.success('Project created', 'The new project has been created successfully.');
       }
       navigate('/');
@@ -158,30 +152,31 @@ export function ProjectForm() {
     const { name, value } = e.target;
 
     setFormData((prev) => {
-      let newValue: string | number | undefined = value;
       const numericFields = [
         'totalAmount', 'advanceReceived', 'totalReceived',
         'partnerShareGiven', 'harshkShareGiven', 'nikkuShareGiven'
       ];
 
       if (numericFields.includes(name)) {
-        if (value !== '' && !/^\d*\.?\d*$/.test(value)) {
+        // Allow empty string or valid integer only regex
+        if (value !== '' && !/^\d*$/.test(value)) {
           return prev;
         }
-
-        newValue = value === '' ? undefined : parseFloat(value);
+        // Don't parse here, keep as string
       }
 
-      const updates = {
+      const updates: Partial<ProjectFormData> = {
         ...prev,
-        [name]: newValue,
+        [name]: value,
       };
 
       if (name === 'advanceReceived') {
-        const newAdvance = (newValue as number) || 0;
-        const oldAdvance = prev.advanceReceived || 0;
+        // For calculation we need numbers
+        const newAdvance = parseFloat(value) || 0;
+        const oldAdvance = parseFloat(prev.advanceReceived?.toString() || '0') || 0;
         const difference = newAdvance - oldAdvance;
-        updates.totalReceived = (prev.totalReceived || 0) + difference;
+        const oldTotal = parseFloat(prev.totalReceived?.toString() || '0') || 0;
+        updates.totalReceived = oldTotal + difference;
       }
 
       return updates;
@@ -322,8 +317,9 @@ export function ProjectForm() {
                 <div>
                   <label className="block text-sm font-medium mb-1 text-foreground">Total Amount</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
+                    <span className="absolute left-3 top-2 text-muted-foreground pointer-events-none">₹</span>
                     <input
+                      name="totalAmount"
                       value={formData.totalAmount ?? ''}
                       onChange={handleChange}
                       required
@@ -338,8 +334,9 @@ export function ProjectForm() {
                 <div>
                   <label className="block text-sm font-medium mb-1 text-foreground">Advance Received</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
+                    <span className="absolute left-3 top-2 text-muted-foreground pointer-events-none">₹</span>
                     <input
+                      name="advanceReceived"
                       value={formData.advanceReceived ?? ''}
                       onChange={handleChange}
                       type="text"
@@ -353,8 +350,9 @@ export function ProjectForm() {
                 <div>
                   <label className="block text-sm font-medium mb-1 text-foreground">Total Received</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
+                    <span className="absolute left-3 top-2 text-muted-foreground pointer-events-none">₹</span>
                     <input
+                      name="totalReceived"
                       value={formData.totalReceived ?? ''}
                       onChange={handleChange}
                       type="text"
@@ -439,8 +437,9 @@ export function ProjectForm() {
                 <div>
                   <label className="block text-sm font-medium mb-1 text-muted-foreground">Share Given (₹)</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
+                    <span className="absolute left-3 top-2 text-muted-foreground pointer-events-none">₹</span>
                     <input
+                      name="harshkShareGiven"
                       value={formData.harshkShareGiven ?? ''}
                       onChange={handleChange}
                       type="text"
@@ -475,8 +474,9 @@ export function ProjectForm() {
                 <div>
                   <label className="block text-sm font-medium mb-1 text-muted-foreground">Share Given (₹)</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-muted-foreground">₹</span>
+                    <span className="absolute left-3 top-2 text-muted-foreground pointer-events-none">₹</span>
                     <input
+                      name="nikkuShareGiven"
                       value={formData.nikkuShareGiven ?? ''}
                       onChange={handleChange}
                       type="text"

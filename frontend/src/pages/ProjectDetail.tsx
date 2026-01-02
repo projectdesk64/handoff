@@ -649,8 +649,56 @@ export function ProjectDetail() {
               <p className="capitalize font-medium">{project.type}</p>
             </div>
             <div className="md:col-span-2">
-              <h3 className="font-medium text-muted-foreground mb-1.5">Tech Stack</h3>
-              <p className="font-medium">{project.techStack || '—'}</p>
+              <h3 className="font-medium text-muted-foreground mb-3">Tech Stack</h3>
+              {(() => {
+                const parseTechStack = (data: string[] | string | undefined): { category: string; tech: string }[] => {
+                  if (!data) return [];
+                  const rawString = Array.isArray(data) ? data.join(' ') : data;
+                  const categories = [
+                    'Frontend:', 'Backend:', 'Styling:', 'UI Components:',
+                    'Maps:', 'Icons:', 'Routing:', 'Database:', 'API:',
+                    'Testing:', 'Deployment:', 'State Management:', 'Authentication:',
+                    'Tools:', 'DevOps:', 'Cloud:', 'Mobile:', 'AI/ML:'
+                  ];
+                  const pattern = new RegExp(`(${categories.map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g');
+                  const parts = rawString.split(pattern).filter(p => p.trim());
+
+                  const result: { category: string; tech: string }[] = [];
+                  for (let i = 0; i < parts.length; i += 2) {
+                    const category = parts[i]?.replace(':', '').trim();
+                    const tech = parts[i + 1]?.trim();
+                    if (category && tech) {
+                      result.push({ category, tech });
+                    }
+                  }
+
+                  return result;
+                };
+
+                const techItems = parseTechStack(project.techStack);
+
+                if (techItems.length === 0) {
+                  return <p className="font-medium text-muted-foreground">—</p>;
+                }
+
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {techItems.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col gap-1 p-3 bg-muted/40 rounded-lg border border-border/50"
+                      >
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          {item.category}
+                        </span>
+                        <span className="font-semibold text-foreground text-sm">
+                          {item.tech}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
             <div className="md:col-span-2">
               <h3 className="font-medium text-muted-foreground mb-1.5">Deliverables</h3>
