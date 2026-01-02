@@ -11,6 +11,8 @@ import { formatINR } from '../utils/currency';
 import { formatDate } from '../utils/date';
 import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { SmartStack } from '../components/SmartStack';
+
 import { Layout } from '../components/Layout';
 import { validateURL } from '../utils/validation';
 
@@ -257,9 +259,15 @@ export function ProjectDetail() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-3">
               {/* Status Badge */}
-              <div className={`px-3 py-1 rounded-full text-sm font-medium border inline-flex items-center ${overdue
-                ? 'bg-destructive/10 text-destructive border-destructive/20'
-                : 'bg-muted text-muted-foreground border-border'
+              <div className={`px-3 py-1 rounded-full text-sm font-medium border inline-flex items-center transition-colors ${status === 'Delivered'
+                ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+                : status === 'In Progress'
+                  ? 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200'
+                  : status === 'Ready to Deliver' || status === 'Completed (Payment Pending)'
+                    ? 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200'
+                    : overdue
+                      ? 'bg-destructive/10 text-destructive border-destructive/20'
+                      : 'bg-muted text-muted-foreground border-border'
                 }`}>
                 {status}
               </div>
@@ -323,7 +331,7 @@ export function ProjectDetail() {
 
         {/* SECTION 2 — PAYMENT DETAILS */}
         <section>
-          <Card className="rounded-xl overflow-hidden border-border shadow-sm">
+          <Card className="rounded-xl overflow-hidden border-gray-100 shadow-sm">
             <CardHeader className="pb-2 pt-6 px-6">
               <h2 className="text-base font-semibold text-foreground leading-none tracking-tight">Payment Details</h2>
             </CardHeader>
@@ -637,76 +645,81 @@ export function ProjectDetail() {
 
         {/* SECTION 4 — PROJECT DETAILS */}
         <section className="space-y-6">
-          <h2 className="text-lg font-semibold tracking-tight">Project Specifications</h2>
+          <Card className="rounded-xl overflow-hidden border-gray-100 shadow-sm bg-card">
+            <CardHeader className="pb-2 pt-6 px-6">
+              <h2 className="text-base font-semibold text-foreground leading-none tracking-tight">Project Specifications</h2>
+            </CardHeader>
+            <CardContent className="space-y-8 pt-6 text-sm">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 text-sm">
-            <div>
-              <h3 className="font-medium text-muted-foreground mb-1.5">Client</h3>
-              <p className="font-medium">{project.clientName || '—'}</p>
-            </div>
-            <div>
-              <h3 className="font-medium text-muted-foreground mb-1.5">Type</h3>
-              <p className="capitalize font-medium">{project.type}</p>
-            </div>
-            <div className="md:col-span-2">
-              <h3 className="font-medium text-muted-foreground mb-3">Tech Stack</h3>
-              {(() => {
-                const parseTechStack = (data: string[] | string | undefined): { category: string; tech: string }[] => {
-                  if (!data) return [];
-                  const rawString = Array.isArray(data) ? data.join(' ') : data;
-                  const categories = [
-                    'Frontend:', 'Backend:', 'Styling:', 'UI Components:',
-                    'Maps:', 'Icons:', 'Routing:', 'Database:', 'API:',
-                    'Testing:', 'Deployment:', 'State Management:', 'Authentication:',
-                    'Tools:', 'DevOps:', 'Cloud:', 'Mobile:', 'AI/ML:'
-                  ];
-                  const pattern = new RegExp(`(${categories.map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g');
-                  const parts = rawString.split(pattern).filter(p => p.trim());
+              {/* Client & Type Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Client</h3>
+                  <p className="font-medium text-foreground text-base">{project.clientName || '—'}</p>
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Type</h3>
+                  <p className="capitalize font-medium text-foreground text-base">{project.type}</p>
+                </div>
+              </div>
 
-                  const result: { category: string; tech: string }[] = [];
-                  for (let i = 0; i < parts.length; i += 2) {
-                    const category = parts[i]?.replace(':', '').trim();
-                    const tech = parts[i + 1]?.trim();
-                    if (category && tech) {
-                      result.push({ category, tech });
-                    }
+              {/* Tech Stack - Smart Grid */}
+              <div className="border-t border-border/50 pt-6">
+                <h3 className="font-medium text-muted-foreground mb-3">Tech Stack</h3>
+                {project.techStack ? (
+                  <SmartStack techs={Array.isArray(project.techStack) ? project.techStack : (project.techStack as string).split(',').map(s => s.trim())} />
+                ) : (
+                  <p className="text-muted-foreground italic">No details available</p>
+                )}
+              </div>
+
+              {/* Deliverables - Clean Minimal List */}
+              <div className="border-t border-border/50 pt-6">
+                <h3 className="font-medium text-muted-foreground mb-1.5">Deliverables</h3>
+                {(() => {
+                  if (!project.deliverables) return <p className="text-muted-foreground italic text-sm">—</p>;
+
+                  const delivString = project.deliverables + "";
+                  let items = [];
+                  if (delivString.includes('\n')) {
+                    items = delivString.split('\n');
+                  } else {
+                    items = delivString.split(',');
                   }
+                  items = items.map(t => t.trim()).filter(Boolean);
 
-                  return result;
-                };
+                  if (items.length === 0) return <p className="text-muted-foreground italic text-sm">—</p>;
 
-                const techItems = parseTechStack(project.techStack);
+                  return (
+                    <ul className="space-y-0 divide-y divide-border/30">
+                      {items.map((item, idx) => (
+                        <li
+                          key={idx}
+                          className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+                        >
+                          {/* Elegant Circle Check */}
+                          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 shrink-0">
+                            <svg
+                              className="w-3 h-3 text-primary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={3}
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
 
-                if (techItems.length === 0) {
-                  return <p className="font-medium text-muted-foreground">—</p>;
-                }
-
-                return (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {techItems.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex flex-col gap-1 p-3 bg-muted/40 rounded-lg border border-border/50"
-                      >
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                          {item.category}
-                        </span>
-                        <span className="font-semibold text-foreground text-sm">
-                          {item.tech}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
-            </div>
-            <div className="md:col-span-2">
-              <h3 className="font-medium text-muted-foreground mb-1.5">Deliverables</h3>
-              <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">{project.deliverables || '—'}</p>
-            </div>
-
-
-          </div>
+                          {/* Text */}
+                          <span className="text-sm text-foreground">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                })()}
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
         <Separator />
