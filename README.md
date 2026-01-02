@@ -23,6 +23,9 @@ Handoff is a minimal internal tool designed to track projects, client payments, 
 -   **Gated Access**: Store completion videos, repo links, and live URLs.
 -   **Deliverables**: List out specific items agreed upon (JSON format).
 
+### Data Integrity
+-   **Audit Logging**: Comprehensive internal tracking of every project creation and update, recording field-level changes for historical accuracy.
+
 ## Tech Stack
 
 ### Frontend
@@ -36,6 +39,7 @@ Handoff is a minimal internal tool designed to track projects, client payments, 
 -   **Router**: Gorilla Mux
 -   **Database**: SQLite (via `modernc.org/sqlite` - CGO-free)
 -   **Architecture**: Simple REST API with `net/http`.
+-   **Logging**: Internal Audit Log system for tracking project lifecycle events.
 
 ## Getting Started
 
